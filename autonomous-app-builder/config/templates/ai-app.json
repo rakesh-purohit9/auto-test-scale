@@ -1,0 +1,179 @@
+{
+  "$schema": "../app-config.schema.json",
+  "version": "1.0.0",
+
+  "app": {
+    "name": "AI-Powered Application",
+    "description": "Next-generation AI application with chat, document analysis, and content generation",
+    "type": "ai-app",
+    "category": "productivity"
+  },
+
+  "requirements": {
+    "description": "Full-featured AI application leveraging multiple AI providers for chat, document analysis, image generation, and more",
+    "features": [
+      "Multi-model AI chat interface",
+      "Document upload and analysis",
+      "Image generation with DALL-E/Midjourney",
+      "Voice input and text-to-speech",
+      "Conversation history and search",
+      "Custom AI personas/agents",
+      "RAG (Retrieval Augmented Generation)",
+      "Token usage tracking",
+      "API access for developers",
+      "Team workspaces",
+      "Prompt templates library",
+      "Export conversations",
+      "Plugin/extension system",
+      "Usage analytics dashboard"
+    ],
+    "screens": [
+      {
+        "name": "Home",
+        "path": "/",
+        "description": "Landing page showcasing AI capabilities with demos and pricing"
+      },
+      {
+        "name": "Chat",
+        "path": "/chat",
+        "description": "Main AI chat interface with model selection, conversation list, and streaming responses"
+      },
+      {
+        "name": "Chat Thread",
+        "path": "/chat/[id]",
+        "description": "Individual conversation with full history and context"
+      },
+      {
+        "name": "Documents",
+        "path": "/documents",
+        "description": "Document library with upload, analysis, and Q&A"
+      },
+      {
+        "name": "Images",
+        "path": "/images",
+        "description": "AI image generation with gallery and editing"
+      },
+      {
+        "name": "Agents",
+        "path": "/agents",
+        "description": "Custom AI agent builder with persona configuration"
+      },
+      {
+        "name": "Templates",
+        "path": "/templates",
+        "description": "Prompt template library with community sharing"
+      },
+      {
+        "name": "API",
+        "path": "/api-docs",
+        "description": "API documentation and key management"
+      },
+      {
+        "name": "Usage",
+        "path": "/usage",
+        "description": "Token usage, costs, and analytics"
+      },
+      {
+        "name": "Settings",
+        "path": "/settings",
+        "description": "Account, preferences, and model configurations"
+      }
+    ],
+    "entities": [
+      {
+        "name": "Conversation",
+        "fields": ["id", "userId", "title", "model", "messages", "tokens", "createdAt"]
+      },
+      {
+        "name": "Message",
+        "fields": ["id", "conversationId", "role", "content", "tokens", "createdAt"]
+      },
+      {
+        "name": "Document",
+        "fields": ["id", "userId", "name", "type", "url", "embeddings", "createdAt"]
+      },
+      {
+        "name": "Agent",
+        "fields": ["id", "userId", "name", "description", "systemPrompt", "model", "public"]
+      },
+      {
+        "name": "Template",
+        "fields": ["id", "userId", "name", "description", "prompt", "variables", "public"]
+      },
+      {
+        "name": "Usage",
+        "fields": ["id", "userId", "provider", "model", "tokens", "cost", "date"]
+      }
+    ]
+  },
+
+  "techStack": {
+    "framework": "next",
+    "version": "15",
+    "language": "typescript",
+    "styling": {
+      "solution": "tailwindcss",
+      "components": "shadcn-ui",
+      "animations": "framer-motion"
+    },
+    "state": "zustand",
+    "forms": {
+      "library": "react-hook-form",
+      "validation": "zod"
+    },
+    "dataFetching": "@tanstack/react-query"
+  },
+
+  "integrations": {
+    "supabase": {
+      "enabled": true,
+      "features": {
+        "auth": true,
+        "database": true,
+        "storage": true,
+        "realtime": true,
+        "edgeFunctions": true
+      }
+    },
+    "ai": {
+      "enabled": true,
+      "providers": ["openai", "anthropic", "gemini", "perplexity"],
+      "features": {
+        "chat": true,
+        "streaming": true,
+        "vision": true,
+        "embeddings": true,
+        "imageGeneration": true
+      }
+    },
+    "vectorDb": {
+      "enabled": true,
+      "provider": "supabase-pgvector"
+    },
+    "payments": {
+      "enabled": true,
+      "provider": "stripe",
+      "features": {
+        "subscriptions": true,
+        "usage": true
+      }
+    }
+  },
+
+  "design": {
+    "theme": "modern",
+    "colorScheme": {
+      "primary": "#6366f1",
+      "secondary": "#8b5cf6",
+      "accent": "#06b6d4"
+    }
+  },
+
+  "quality": {
+    "tenX": {
+      "ui": true,
+      "details": true,
+      "perfection": true
+    }
+  }
+}

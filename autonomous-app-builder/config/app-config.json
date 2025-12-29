@@ -1,0 +1,188 @@
+{
+  "$schema": "./app-config.schema.json",
+  "version": "1.0.0",
+
+  "app": {
+    "name": "My Awesome App",
+    "description": "A stunning application built with the autonomous app builder",
+    "type": "saas",
+    "category": "productivity"
+  },
+
+  "requirements": {
+    "description": "Describe what your app should do here",
+    "features": [
+      "User authentication with email/password and OAuth",
+      "Dashboard with analytics and charts",
+      "CRUD operations for main entities",
+      "Real-time updates and notifications",
+      "Settings and preferences",
+      "Dark/light mode toggle"
+    ],
+    "screens": [
+      {
+        "name": "Landing Page",
+        "path": "/",
+        "description": "Marketing landing page with hero, features, pricing, testimonials"
+      },
+      {
+        "name": "Login",
+        "path": "/login",
+        "description": "Authentication page with email/password and OAuth options"
+      },
+      {
+        "name": "Sign Up",
+        "path": "/signup",
+        "description": "Registration page with form validation"
+      },
+      {
+        "name": "Dashboard",
+        "path": "/dashboard",
+        "description": "Main dashboard with stats, charts, and recent activity"
+      },
+      {
+        "name": "Settings",
+        "path": "/settings",
+        "description": "User settings and preferences"
+      }
+    ],
+    "entities": [
+      {
+        "name": "User",
+        "fields": ["id", "email", "name", "avatar", "createdAt"]
+      }
+    ]
+  },
+
+  "techStack": {
+    "framework": "next",
+    "version": "15",
+    "language": "typescript",
+    "styling": {
+      "solution": "tailwindcss",
+      "components": "shadcn-ui",
+      "animations": "framer-motion"
+    },
+    "state": "zustand",
+    "forms": {
+      "library": "react-hook-form",
+      "validation": "zod"
+    },
+    "dataFetching": "@tanstack/react-query"
+  },
+
+  "integrations": {
+    "supabase": {
+      "enabled": true,
+      "features": {
+        "auth": true,
+        "database": true,
+        "storage": true,
+        "realtime": true,
+        "edgeFunctions": false
+      },
+      "credentials": {
+        "url": "${NEXT_PUBLIC_SUPABASE_URL}",
+        "anonKey": "${NEXT_PUBLIC_SUPABASE_ANON_KEY}",
+        "serviceRoleKey": "${SUPABASE_SERVICE_ROLE_KEY}"
+      }
+    },
+    "ai": {
+      "enabled": true,
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250514",
+      "features": {
+        "chat": true,
+        "summarization": false,
+        "translation": false,
+        "imageAnalysis": false
+      },
+      "credentials": {
+        "apiKey": "${ANTHROPIC_API_KEY}"
+      }
+    },
+    "analytics": {
+      "enabled": false,
+      "provider": "posthog"
+    },
+    "payments": {
+      "enabled": false,
+      "provider": "stripe"
+    },
+    "email": {
+      "enabled": false,
+      "provider": "resend"
+    }
+  },
+
+  "design": {
+    "theme": "modern",
+    "colorScheme": {
+      "primary": "#2563eb",
+      "secondary": "#64748b",
+      "accent": "#22c55e",
+      "background": {
+        "light": "#ffffff",
+        "dark": "#0a0a0a"
+      }
+    },
+    "typography": {
+      "headingFont": "Inter",
+      "bodyFont": "Inter",
+      "monoFont": "JetBrains Mono"
+    },
+    "borderRadius": "rounded-xl",
+    "shadows": "modern",
+    "animations": {
+      "enabled": true,
+      "duration": "normal",
+      "easing": "ease-out"
+    }
+  },
+
+  "quality": {
+    "tenX": {
+      "ui": true,
+      "details": true,
+      "perfection": true,
+      "features": true,
+      "functionality": true
+    },
+    "testing": {
+      "unit": true,
+      "integration": true,
+      "e2e": true,
+      "visual": true,
+      "performance": true
+    },
+    "autoFix": {
+      "enabled": true,
+      "maxRetries": 5
+    },
+    "accessibility": {
+      "wcagLevel": "AA",
+      "keyboardNav": true,
+      "screenReader": true
+    }
+  },
+
+  "deployment": {
+    "platform": "vercel",
+    "domain": null,
+    "environment": {
+      "production": true,
+      "preview": true,
+      "development": true
+    }
+  },
+
+  "mcp": {
+    "servers": {
+      "filesystem": true,
+      "postgres": true,
+      "github": false,
+      "puppeteer": true,
+      "search": false
+    }
+  }
+}

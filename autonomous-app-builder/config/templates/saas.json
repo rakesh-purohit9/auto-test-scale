@@ -1,0 +1,189 @@
+{
+  "$schema": "../app-config.schema.json",
+  "version": "1.0.0",
+
+  "app": {
+    "name": "SaaS Platform",
+    "description": "A modern SaaS application with subscription management, team collaboration, and analytics",
+    "type": "saas",
+    "category": "business"
+  },
+
+  "requirements": {
+    "description": "Full-featured SaaS platform with multi-tenant architecture, subscription billing, team management, and comprehensive dashboard",
+    "features": [
+      "Multi-tenant architecture with workspace isolation",
+      "User authentication with magic link, password, and OAuth (Google, GitHub)",
+      "Team management with roles (owner, admin, member)",
+      "Subscription management with Stripe integration",
+      "Usage-based billing with metering",
+      "Admin dashboard with analytics",
+      "Real-time collaboration features",
+      "API key management for developers",
+      "Webhook configuration",
+      "Audit logs and activity tracking",
+      "Dark/light mode with system preference",
+      "Responsive design for all devices",
+      "Email notifications and preferences",
+      "Export data functionality",
+      "Help center and documentation"
+    ],
+    "screens": [
+      {
+        "name": "Marketing Landing",
+        "path": "/",
+        "description": "Beautiful landing page with hero, features grid, pricing table, testimonials, FAQ, and CTA sections"
+      },
+      {
+        "name": "Pricing",
+        "path": "/pricing",
+        "description": "Detailed pricing page with feature comparison table and FAQ"
+      },
+      {
+        "name": "Login",
+        "path": "/login",
+        "description": "Clean login page with email/password, magic link, and OAuth buttons"
+      },
+      {
+        "name": "Sign Up",
+        "path": "/signup",
+        "description": "Registration with workspace creation and plan selection"
+      },
+      {
+        "name": "Dashboard",
+        "path": "/dashboard",
+        "description": "Main dashboard with KPI cards, charts, activity feed, and quick actions"
+      },
+      {
+        "name": "Analytics",
+        "path": "/dashboard/analytics",
+        "description": "Detailed analytics with date range picker, multiple chart types, and export"
+      },
+      {
+        "name": "Team",
+        "path": "/dashboard/team",
+        "description": "Team member management with invite, role assignment, and removal"
+      },
+      {
+        "name": "Billing",
+        "path": "/dashboard/billing",
+        "description": "Subscription management, usage display, invoice history, and payment methods"
+      },
+      {
+        "name": "Settings",
+        "path": "/dashboard/settings",
+        "description": "Workspace settings, profile, notifications, API keys, and webhooks"
+      },
+      {
+        "name": "API Docs",
+        "path": "/docs",
+        "description": "Interactive API documentation with code examples"
+      }
+    ],
+    "entities": [
+      {
+        "name": "Workspace",
+        "fields": ["id", "name", "slug", "plan", "stripeCustomerId", "createdAt", "updatedAt"]
+      },
+      {
+        "name": "User",
+        "fields": ["id", "email", "name", "avatar", "role", "workspaceId", "createdAt"]
+      },
+      {
+        "name": "Subscription",
+        "fields": ["id", "workspaceId", "stripeSubscriptionId", "plan", "status", "currentPeriodEnd"]
+      },
+      {
+        "name": "ApiKey",
+        "fields": ["id", "workspaceId", "name", "keyHash", "lastUsedAt", "createdAt"]
+      },
+      {
+        "name": "AuditLog",
+        "fields": ["id", "workspaceId", "userId", "action", "resource", "metadata", "createdAt"]
+      }
+    ]
+  },
+
+  "techStack": {
+    "framework": "next",
+    "version": "15",
+    "language": "typescript",
+    "styling": {
+      "solution": "tailwindcss",
+      "components": "shadcn-ui",
+      "animations": "framer-motion"
+    },
+    "state": "zustand",
+    "forms": {
+      "library": "react-hook-form",
+      "validation": "zod"
+    },
+    "dataFetching": "@tanstack/react-query",
+    "charts": "recharts"
+  },
+
+  "integrations": {
+    "supabase": {
+      "enabled": true,
+      "features": {
+        "auth": true,
+        "database": true,
+        "storage": true,
+        "realtime": true,
+        "edgeFunctions": true
+      }
+    },
+    "ai": {
+      "enabled": true,
+      "provider": "openai",
+      "model": "gpt-4o",
+      "features": {
+        "chat": true,
+        "summarization": true
+      }
+    },
+    "payments": {
+      "enabled": true,
+      "provider": "stripe",
+      "features": {
+        "subscriptions": true,
+        "usage": true,
+        "invoices": true
+      }
+    },
+    "email": {
+      "enabled": true,
+      "provider": "resend"
+    },
+    "analytics": {
+      "enabled": true,
+      "provider": "posthog"
+    }
+  },
+
+  "design": {
+    "theme": "professional",
+    "colorScheme": {
+      "primary": "#2563eb",
+      "secondary": "#64748b",
+      "accent": "#8b5cf6"
+    },
+    "typography": {
+      "headingFont": "Inter",
+      "bodyFont": "Inter"
+    }
+  },
+
+  "quality": {
+    "tenX": {
+      "ui": true,
+      "details": true,
+      "perfection": true
+    },
+    "testing": {
+      "unit": true,
+      "integration": true,
+      "e2e": true
+    }
+  }
+}

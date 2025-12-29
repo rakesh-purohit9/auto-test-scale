@@ -1,0 +1,145 @@
+{
+  "$schema": "../app-config.schema.json",
+  "version": "1.0.0",
+
+  "app": {
+    "name": "Admin Dashboard",
+    "description": "Comprehensive admin dashboard with analytics, data management, and reporting",
+    "type": "dashboard",
+    "category": "admin"
+  },
+
+  "requirements": {
+    "description": "Feature-rich admin dashboard with beautiful visualizations, data tables, and management tools",
+    "features": [
+      "Interactive data visualization charts",
+      "Real-time data updates",
+      "Advanced data tables with filtering/sorting",
+      "User management with RBAC",
+      "File and media management",
+      "Report generation and export",
+      "Audit logs and activity tracking",
+      "System health monitoring",
+      "Customizable widgets",
+      "Bulk operations",
+      "API management",
+      "Email templates",
+      "Notification center",
+      "Multi-language support",
+      "Dark/light theme"
+    ],
+    "screens": [
+      {
+        "name": "Dashboard",
+        "path": "/",
+        "description": "Main dashboard with KPI cards, charts, recent activity, and quick actions"
+      },
+      {
+        "name": "Analytics",
+        "path": "/analytics",
+        "description": "Detailed analytics with date range, multiple chart types, and comparisons"
+      },
+      {
+        "name": "Users",
+        "path": "/users",
+        "description": "User management table with search, filters, and CRUD operations"
+      },
+      {
+        "name": "User Detail",
+        "path": "/users/[id]",
+        "description": "Individual user profile with activity, permissions, and settings"
+      },
+      {
+        "name": "Content",
+        "path": "/content",
+        "description": "Content management with categories, tags, and publishing workflow"
+      },
+      {
+        "name": "Media",
+        "path": "/media",
+        "description": "Media library with upload, organize, and search"
+      },
+      {
+        "name": "Reports",
+        "path": "/reports",
+        "description": "Report builder with templates and export options"
+      },
+      {
+        "name": "Settings",
+        "path": "/settings",
+        "description": "System settings, integrations, and configurations"
+      },
+      {
+        "name": "Logs",
+        "path": "/logs",
+        "description": "System logs and audit trail with search and filters"
+      }
+    ],
+    "entities": [
+      {
+        "name": "User",
+        "fields": ["id", "email", "name", "role", "status", "lastActive", "createdAt"]
+      },
+      {
+        "name": "Content",
+        "fields": ["id", "title", "slug", "body", "status", "authorId", "categoryId", "publishedAt"]
+      },
+      {
+        "name": "Media",
+        "fields": ["id", "name", "type", "url", "size", "uploadedBy", "createdAt"]
+      },
+      {
+        "name": "AuditLog",
+        "fields": ["id", "userId", "action", "resource", "details", "ip", "createdAt"]
+      },
+      {
+        "name": "Report",
+        "fields": ["id", "name", "type", "query", "schedule", "lastRun", "createdBy"]
+      }
+    ]
+  },
+
+  "techStack": {
+    "framework": "next",
+    "version": "15",
+    "language": "typescript",
+    "styling": {
+      "solution": "tailwindcss",
+      "components": "shadcn-ui",
+      "animations": "framer-motion"
+    },
+    "state": "zustand",
+    "charts": "recharts",
+    "tables": "@tanstack/react-table",
+    "dataFetching": "@tanstack/react-query"
+  },
+
+  "integrations": {
+    "supabase": {
+      "enabled": true,
+      "features": {
+        "auth": true,
+        "database": true,
+        "storage": true,
+        "realtime": true
+      }
+    },
+    "ai": {
+      "enabled": true,
+      "provider": "openai",
+      "features": {
+        "dataAnalysis": true,
+        "reportGeneration": true
+      }
+    }
+  },
+
+  "design": {
+    "theme": "professional",
+    "colorScheme": {
+      "primary": "#3b82f6",
+      "secondary": "#64748b",
+      "accent": "#22c55e"
+    }
+  }
+}

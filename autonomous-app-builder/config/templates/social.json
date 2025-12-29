@@ -1,0 +1,193 @@
+{
+  "$schema": "../app-config.schema.json",
+  "version": "1.0.0",
+
+  "app": {
+    "name": "Social Platform",
+    "description": "Modern social networking platform with profiles, posts, feeds, and real-time messaging",
+    "type": "social",
+    "category": "social"
+  },
+
+  "requirements": {
+    "description": "Feature-rich social platform with user profiles, posts, comments, likes, following system, and real-time notifications",
+    "features": [
+      "User profiles with customization",
+      "Post creation with rich media (images, videos)",
+      "Feed algorithm with personalization",
+      "Like, comment, and share functionality",
+      "Follow/unfollow system",
+      "Direct messaging with real-time updates",
+      "Notifications system",
+      "Hashtags and mentions",
+      "Search users and posts",
+      "Trending topics",
+      "Stories/temporary posts",
+      "User verification",
+      "Content moderation tools",
+      "Privacy settings",
+      "Mobile-first responsive design",
+      "Push notifications"
+    ],
+    "screens": [
+      {
+        "name": "Home Feed",
+        "path": "/",
+        "description": "Personalized feed with posts from followed users, suggested content, and stories"
+      },
+      {
+        "name": "Explore",
+        "path": "/explore",
+        "description": "Discover page with trending posts, hashtags, and suggested users"
+      },
+      {
+        "name": "Profile",
+        "path": "/[username]",
+        "description": "User profile with posts grid, followers/following counts, and bio"
+      },
+      {
+        "name": "Post Detail",
+        "path": "/post/[id]",
+        "description": "Single post view with comments thread and engagement"
+      },
+      {
+        "name": "Create Post",
+        "path": "/create",
+        "description": "Post creation with image/video upload, captions, and hashtags"
+      },
+      {
+        "name": "Messages",
+        "path": "/messages",
+        "description": "Direct messages inbox with conversation list"
+      },
+      {
+        "name": "Chat",
+        "path": "/messages/[userId]",
+        "description": "Real-time chat with message history and typing indicators"
+      },
+      {
+        "name": "Notifications",
+        "path": "/notifications",
+        "description": "Activity notifications (likes, comments, follows, mentions)"
+      },
+      {
+        "name": "Search",
+        "path": "/search",
+        "description": "Search users, posts, and hashtags with filters"
+      },
+      {
+        "name": "Settings",
+        "path": "/settings",
+        "description": "Account settings, privacy, notifications, and security"
+      },
+      {
+        "name": "Edit Profile",
+        "path": "/settings/profile",
+        "description": "Profile editing with avatar, bio, and links"
+      }
+    ],
+    "entities": [
+      {
+        "name": "User",
+        "fields": ["id", "username", "email", "displayName", "bio", "avatar", "coverImage", "verified", "createdAt"]
+      },
+      {
+        "name": "Post",
+        "fields": ["id", "userId", "content", "media", "likes", "comments", "shares", "createdAt"]
+      },
+      {
+        "name": "Comment",
+        "fields": ["id", "postId", "userId", "content", "likes", "parentId", "createdAt"]
+      },
+      {
+        "name": "Follow",
+        "fields": ["id", "followerId", "followingId", "createdAt"]
+      },
+      {
+        "name": "Like",
+        "fields": ["id", "userId", "postId", "commentId", "createdAt"]
+      },
+      {
+        "name": "Message",
+        "fields": ["id", "senderId", "receiverId", "content", "read", "createdAt"]
+      },
+      {
+        "name": "Notification",
+        "fields": ["id", "userId", "type", "actorId", "postId", "read", "createdAt"]
+      }
+    ]
+  },
+
+  "techStack": {
+    "framework": "next",
+    "version": "15",
+    "language": "typescript",
+    "styling": {
+      "solution": "tailwindcss",
+      "components": "shadcn-ui",
+      "animations": "framer-motion"
+    },
+    "state": "zustand",
+    "forms": {
+      "library": "react-hook-form",
+      "validation": "zod"
+    },
+    "dataFetching": "@tanstack/react-query"
+  },
+
+  "integrations": {
+    "supabase": {
+      "enabled": true,
+      "features": {
+        "auth": true,
+        "database": true,
+        "storage": true,
+        "realtime": true,
+        "edgeFunctions": true
+      }
+    },
+    "ai": {
+      "enabled": true,
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250514",
+      "features": {
+        "contentModeration": true,
+        "recommendations": true
+      }
+    },
+    "analytics": {
+      "enabled": true,
+      "provider": "posthog"
+    },
+    "push": {
+      "enabled": true,
+      "provider": "onesignal"
+    }
+  },
+
+  "design": {
+    "theme": "vibrant",
+    "colorScheme": {
+      "primary": "#6366f1",
+      "secondary": "#ec4899",
+      "accent": "#f59e0b"
+    },
+    "typography": {
+      "headingFont": "Inter",
+      "bodyFont": "Inter"
+    }
+  },
+
+  "quality": {
+    "tenX": {
+      "ui": true,
+      "details": true,
+      "perfection": true
+    },
+    "testing": {
+      "unit": true,
+      "integration": true,
+      "e2e": true
+    }
+  }
+}

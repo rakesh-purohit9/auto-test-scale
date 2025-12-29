@@ -1,0 +1,206 @@
+{
+  "$schema": "../app-config.schema.json",
+  "version": "1.0.0",
+
+  "app": {
+    "name": "E-Commerce Store",
+    "description": "Modern e-commerce platform with product catalog, cart, checkout, and order management",
+    "type": "ecommerce",
+    "category": "retail"
+  },
+
+  "requirements": {
+    "description": "Full-featured e-commerce store with beautiful product displays, smooth checkout, and comprehensive admin panel",
+    "features": [
+      "Product catalog with categories and filters",
+      "Product search with autocomplete",
+      "Product variants (size, color, etc.)",
+      "Image gallery with zoom",
+      "Shopping cart with persistence",
+      "Wishlist functionality",
+      "Guest checkout support",
+      "Multiple payment methods (Stripe)",
+      "Order tracking with status updates",
+      "Customer reviews and ratings",
+      "Inventory management",
+      "Discount codes and promotions",
+      "Shipping calculator",
+      "Email notifications",
+      "Admin dashboard with analytics",
+      "Mobile-optimized experience"
+    ],
+    "screens": [
+      {
+        "name": "Home",
+        "path": "/",
+        "description": "Stunning homepage with hero banner, featured products, categories, new arrivals, and newsletter signup"
+      },
+      {
+        "name": "Product Listing",
+        "path": "/products",
+        "description": "Product grid with filters (category, price, brand), sort options, and pagination"
+      },
+      {
+        "name": "Product Detail",
+        "path": "/products/[slug]",
+        "description": "Product page with image gallery, variants, add to cart, reviews, and related products"
+      },
+      {
+        "name": "Category",
+        "path": "/category/[slug]",
+        "description": "Category page with subcategories and filtered products"
+      },
+      {
+        "name": "Cart",
+        "path": "/cart",
+        "description": "Shopping cart with quantity controls, remove items, and order summary"
+      },
+      {
+        "name": "Checkout",
+        "path": "/checkout",
+        "description": "Multi-step checkout with shipping, payment, and review steps"
+      },
+      {
+        "name": "Order Confirmation",
+        "path": "/order/[id]",
+        "description": "Order confirmation with details and tracking link"
+      },
+      {
+        "name": "Account",
+        "path": "/account",
+        "description": "Customer account with orders, addresses, and profile settings"
+      },
+      {
+        "name": "Wishlist",
+        "path": "/wishlist",
+        "description": "Saved items with add to cart functionality"
+      },
+      {
+        "name": "Search",
+        "path": "/search",
+        "description": "Search results page with filters and suggestions"
+      },
+      {
+        "name": "Admin Dashboard",
+        "path": "/admin",
+        "description": "Admin panel with orders, products, customers, and analytics"
+      },
+      {
+        "name": "Admin Products",
+        "path": "/admin/products",
+        "description": "Product management with CRUD operations and bulk actions"
+      },
+      {
+        "name": "Admin Orders",
+        "path": "/admin/orders",
+        "description": "Order management with status updates and fulfillment"
+      }
+    ],
+    "entities": [
+      {
+        "name": "Product",
+        "fields": ["id", "name", "slug", "description", "price", "comparePrice", "images", "categoryId", "inventory", "status"]
+      },
+      {
+        "name": "Category",
+        "fields": ["id", "name", "slug", "description", "image", "parentId"]
+      },
+      {
+        "name": "ProductVariant",
+        "fields": ["id", "productId", "name", "sku", "price", "inventory", "options"]
+      },
+      {
+        "name": "Order",
+        "fields": ["id", "userId", "status", "total", "shippingAddress", "paymentMethod", "items", "createdAt"]
+      },
+      {
+        "name": "Review",
+        "fields": ["id", "productId", "userId", "rating", "title", "content", "createdAt"]
+      },
+      {
+        "name": "Cart",
+        "fields": ["id", "userId", "items", "updatedAt"]
+      }
+    ]
+  },
+
+  "techStack": {
+    "framework": "next",
+    "version": "15",
+    "language": "typescript",
+    "styling": {
+      "solution": "tailwindcss",
+      "components": "shadcn-ui",
+      "animations": "framer-motion"
+    },
+    "state": "zustand",
+    "forms": {
+      "library": "react-hook-form",
+      "validation": "zod"
+    },
+    "dataFetching": "@tanstack/react-query"
+  },
+
+  "integrations": {
+    "supabase": {
+      "enabled": true,
+      "features": {
+        "auth": true,
+        "database": true,
+        "storage": true,
+        "realtime": true
+      }
+    },
+    "ai": {
+      "enabled": true,
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "features": {
+        "productRecommendations": true,
+        "searchEnhancement": true
+      }
+    },
+    "payments": {
+      "enabled": true,
+      "provider": "stripe",
+      "features": {
+        "checkout": true,
+        "webhooks": true
+      }
+    },
+    "email": {
+      "enabled": true,
+      "provider": "resend"
+    },
+    "search": {
+      "enabled": true,
+      "provider": "algolia"
+    }
+  },
+
+  "design": {
+    "theme": "modern",
+    "colorScheme": {
+      "primary": "#000000",
+      "secondary": "#737373",
+      "accent": "#f59e0b"
+    },
+    "typography": {
+      "headingFont": "Inter",
+      "bodyFont": "Inter"
+    }
+  },
+
+  "quality": {
+    "tenX": {
+      "ui": true,
+      "details": true,
+      "perfection": true
+    },
+    "testing": {
+      "unit": true,
+      "integration": true,
+      "e2e": true
+    }
+  }
+}
