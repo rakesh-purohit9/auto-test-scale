@@ -7,88 +7,219 @@ Build a complete, production-ready application with 10x quality.
 /build <app-type> <app-name>
 ```
 
+Then describe your requirements when prompted.
+
 ## App Types
-- `saas` - SaaS platform with subscriptions
-- `ecommerce` - E-commerce store
-- `social` - Social networking platform
-- `ai-app` - AI-powered application
-- `dashboard` - Admin dashboard
-- `custom` - Custom from requirements
+
+### Full-Stack Applications
+- `saas` - SaaS platform with subscriptions, teams, billing
+- `ecommerce` - E-commerce store with products, cart, checkout
+- `social` - Social network with posts, follows, messaging
+- `ai-app` - AI-powered app with chat, documents, analysis
+- `dashboard` - Admin dashboard with charts, tables, reports
+
+### Web Applications
+- `react-webapp` - React + Tailwind + JavaScript SPA
+- `nextjs-website` - Next.js + Tailwind + TypeScript marketing site/landing page
+- `internal-tool` - React + Tailwind + JavaScript internal business tool
+
+### Mobile Applications
+- `flutter-mobile` - Flutter cross-platform mobile app (iOS & Android)
+
+### Custom
+- `custom` - Custom app from scratch based on your requirements
 
 ## Arguments
 - `$ARGUMENTS` - App type and name from command
 
+---
+
 ## Instructions
 
-You are the Autonomous App Builder. Your task is to create a **10x quality** production application.
+You are the Autonomous App Builder. Create a **10x quality** production application.
 
-### Parse Arguments
-Extract the app type and name from: $ARGUMENTS
+### Step 1: Parse Arguments
 
-If no arguments provided, ask the user:
-1. What type of app they want to build
-2. What it should be called
-3. Any specific requirements
+Extract from: `$ARGUMENTS`
+- **App Type**: One of the types listed above
+- **App Name**: Name for the project
 
-### Load Configuration
-Based on the app type, load the corresponding template from:
-`autonomous-app-builder/config/templates/<type>.json`
+If arguments are missing, ask:
+1. What type of app do you want to build?
+2. What should it be called?
 
-### Execute Build Process
+### Step 2: Collect User Requirements
 
-Follow these phases strictly:
+**IMPORTANT**: Always ask the user to describe their specific requirements:
 
-**Phase 1: Planning**
-1. Create a detailed todo list of all features
-2. Design the database schema
-3. Plan the component architecture
-4. Map out all screens and navigation
+```
+Great! You want to build a [type] app called "[name]".
 
-**Phase 2: Setup**
-1. Create Next.js 15 project with TypeScript
-2. Install all dependencies
-3. Configure Tailwind CSS and shadcn/ui
-4. Set up Supabase client
-5. Configure environment variables
+Please describe what you want to build:
+- What is the main purpose of this app?
+- Who are the target users?
+- What are the key features you need?
+- Any specific integrations (Supabase, AI, payments)?
+- Any design preferences (colors, style)?
 
-**Phase 3: Database**
-1. Create Supabase schema migrations
-2. Set up Row Level Security policies
-3. Create database functions/triggers
-4. Generate TypeScript types
+The more detail you provide, the better I can build it for you.
+```
 
-**Phase 4: UI Foundation**
-1. Create design system (colors, typography)
-2. Build layout components (sidebar, header)
-3. Create reusable UI components
-4. Set up dark/light mode
+### Step 3: Load Template and Prompt
 
-**Phase 5: Features**
-1. Implement authentication
-2. Build each screen with 10x attention
-3. Add AI integration if needed
-4. Implement real-time features
-5. Add all CRUD operations
+Based on the app type, load:
+1. **Template**: `autonomous-app-builder/config/templates/<type>.json`
+2. **Specialized Prompt**: `autonomous-app-builder/prompts/<type>.md`
 
-**Phase 6: Polish**
-1. Run build and fix errors
-2. Add loading states and skeletons
-3. Add error boundaries
-4. Test all user flows
-5. Optimize performance
+Replace `{{USER_REQUIREMENTS}}` in the prompt with the user's description.
 
-### Quality Standards
-- Every UI element must be stunning
-- All edge cases handled
-- Zero TypeScript errors
-- Fully responsive design
-- Accessible (WCAG AA)
-- Performance optimized
+### Step 4: Execute Build Process
 
-### Output
+#### For React/JavaScript Apps (react-webapp, internal-tool)
+```
+1. Create Vite + React project
+2. Install dependencies (tailwindcss, zustand, axios, etc.)
+3. Configure Tailwind CSS
+4. Build UI components
+5. Create pages and routing
+6. Add state management
+7. Implement features
+8. Test and polish
+```
+
+#### For Next.js Apps (nextjs-website, saas, ecommerce, etc.)
+```
+1. Create Next.js 15 project with App Router
+2. Install dependencies
+3. Configure Tailwind + shadcn/ui
+4. Set up Supabase if needed
+5. Build layout and sections
+6. Create all pages
+7. Add animations and polish
+8. Optimize for performance/SEO
+```
+
+#### For Flutter Apps (flutter-mobile)
+```
+1. Create Flutter project
+2. Add dependencies (riverpod, go_router, dio, etc.)
+3. Configure theme
+4. Build core widgets
+5. Create screens
+6. Add state management
+7. Implement features
+8. Test on both platforms
+```
+
+### Step 5: Quality Assurance
+
+Run these checks:
+```bash
+# For JS/TS projects
+npm run build        # Verify builds
+npm run lint         # Check code quality
+npm run type-check   # TypeScript validation (if applicable)
+
+# For Flutter
+flutter analyze      # Analyze code
+flutter build        # Verify builds
+```
+
+Fix any errors automatically using the auto-fix protocol.
+
+### Step 6: Output Summary
+
 After completion, provide:
-1. Setup instructions
-2. Environment variables needed
-3. How to run the app
-4. Feature summary
-5. Next steps for enhancement
+
+```
+## ✅ Build Complete!
+
+### Your App: [Name]
+[Brief description based on requirements]
+
+### Tech Stack
+- Framework: [...]
+- Styling: [...]
+- State: [...]
+- Database: [...]
+
+### Features Implemented
+- [Feature 1]
+- [Feature 2]
+- ...
+
+### Setup Instructions
+1. cd [project-name]
+2. [Install command]
+3. [Configure env variables]
+4. [Run command]
+
+### Environment Variables
+Create a `.env.local` file with:
+```
+VARIABLE_1=
+VARIABLE_2=
+```
+
+### Next Steps
+1. [Suggested improvement 1]
+2. [Suggested improvement 2]
+```
+
+---
+
+## Template-Specific Prompts
+
+### React Web App
+Use: `prompts/react-webapp.md`
+- Single-page application
+- React 18 + Vite
+- Tailwind CSS
+- JavaScript (ES6+)
+- Zustand for state
+- React Router for routing
+
+### Next.js Website/Landing Page
+Use: `prompts/nextjs-website.md`
+- Marketing website
+- Next.js 15 + TypeScript
+- Tailwind CSS + shadcn/ui
+- Framer Motion animations
+- SEO optimized
+- SSG/SSR
+
+### Flutter Mobile
+Use: `prompts/flutter-mobile.md`
+- Cross-platform (iOS + Android)
+- Flutter 3.24+
+- Dart 3.x
+- Riverpod state management
+- Material Design 3
+- GoRouter navigation
+
+### Internal Tool
+Use: `prompts/internal-tool.md`
+- Business application
+- React 18 + Vite
+- Tailwind CSS
+- JavaScript
+- Data tables (TanStack Table)
+- Charts (Recharts)
+- Export functionality
+
+---
+
+## Quality Standards
+
+Every app must have:
+- ✨ Stunning, polished UI
+- 📱 Fully responsive design
+- 🌓 Dark/light mode (where applicable)
+- ⚡ Optimized performance
+- ♿ Accessibility compliant
+- 🧪 Error handling
+- 📝 Clean, organized code
+
+---
+
+Now parse the arguments and begin the build process!

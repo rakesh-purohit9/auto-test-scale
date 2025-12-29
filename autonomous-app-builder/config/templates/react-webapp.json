@@ -1,0 +1,137 @@
+{
+  "$schema": "../app-config.schema.json",
+  "version": "1.0.0",
+
+  "app": {
+    "name": "React Web Application",
+    "description": "Modern single-page web application built with React, Tailwind CSS, and JavaScript",
+    "type": "react-webapp",
+    "category": "web"
+  },
+
+  "requirements": {
+    "description": "A responsive, interactive web application with modern UI/UX",
+    "features": [
+      "Component-based architecture",
+      "Client-side routing with React Router",
+      "State management with Context API or Zustand",
+      "Form handling with validation",
+      "API integration with fetch/axios",
+      "Loading states and error handling",
+      "Responsive design for all devices",
+      "Dark/light mode toggle",
+      "Toast notifications",
+      "Modal dialogs",
+      "Protected routes (if auth needed)",
+      "Environment configuration"
+    ],
+    "screens": [
+      {
+        "name": "Home",
+        "path": "/",
+        "description": "Landing/home page with hero section and key features"
+      },
+      {
+        "name": "Dashboard",
+        "path": "/dashboard",
+        "description": "Main application dashboard with widgets and data"
+      },
+      {
+        "name": "List View",
+        "path": "/items",
+        "description": "List/grid view of main entities with search and filters"
+      },
+      {
+        "name": "Detail View",
+        "path": "/items/:id",
+        "description": "Detailed view of a single item with actions"
+      },
+      {
+        "name": "Form",
+        "path": "/items/new",
+        "description": "Create/edit form with validation"
+      },
+      {
+        "name": "Settings",
+        "path": "/settings",
+        "description": "User preferences and app settings"
+      },
+      {
+        "name": "404 Page",
+        "path": "*",
+        "description": "Not found page with navigation back"
+      }
+    ],
+    "customRequirements": "{{USER_REQUIREMENTS}}"
+  },
+
+  "techStack": {
+    "framework": "react",
+    "version": "18",
+    "language": "javascript",
+    "bundler": "vite",
+    "styling": {
+      "solution": "tailwindcss",
+      "components": "custom",
+      "animations": "tailwind-animate"
+    },
+    "routing": "react-router-dom",
+    "state": "zustand",
+    "forms": "react-hook-form",
+    "http": "axios",
+    "icons": "lucide-react"
+  },
+
+  "projectStructure": {
+    "src/": {
+      "components/": "Reusable UI components",
+      "pages/": "Route page components",
+      "hooks/": "Custom React hooks",
+      "context/": "React context providers",
+      "services/": "API service functions",
+      "utils/": "Utility functions",
+      "assets/": "Images, fonts, etc.",
+      "styles/": "Global styles"
+    }
+  },
+
+  "integrations": {
+    "supabase": {
+      "enabled": false,
+      "optional": true
+    },
+    "ai": {
+      "enabled": false,
+      "optional": true
+    },
+    "api": {
+      "enabled": true,
+      "type": "rest",
+      "baseUrl": "{{API_BASE_URL}}"
+    }
+  },
+
+  "design": {
+    "theme": "modern",
+    "colorScheme": {
+      "primary": "#3b82f6",
+      "secondary": "#64748b",
+      "accent": "#10b981"
+    },
+    "responsive": {
+      "breakpoints": ["sm:640px", "md:768px", "lg:1024px", "xl:1280px"]
+    }
+  },
+
+  "quality": {
+    "tenX": {
+      "ui": true,
+      "details": true,
+      "perfection": true
+    },
+    "testing": {
+      "unit": true,
+      "component": true
+    }
+  }
+}

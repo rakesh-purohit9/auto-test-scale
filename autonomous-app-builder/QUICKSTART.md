@@ -26,14 +26,20 @@ claude
 # Build an e-commerce store
 /build ecommerce my-store
 
-# Build a social platform
-/build social my-social
+# Build a React web app
+/build react-webapp my-app
+
+# Build a landing page/website
+/build nextjs-website my-site
+
+# Build a Flutter mobile app
+/build flutter-mobile my-mobile-app
+
+# Build an internal tool
+/build internal-tool my-tool
 
 # Build an AI app
 /build ai-app my-ai-chat
-
-# Build an admin dashboard
-/build dashboard my-admin
 ```
 
 ### Option 2: Use the Builder Script
@@ -103,13 +109,26 @@ GEMINI_API_KEY=xxx
 
 ## Available Templates
 
+### Full-Stack Applications (Next.js + TypeScript + Supabase)
 | Template | Description | Key Features |
 |----------|-------------|--------------|
-| `saas` | SaaS Platform | Subscriptions, Teams, Analytics |
-| `ecommerce` | Online Store | Products, Cart, Checkout |
-| `social` | Social Network | Posts, Follows, Messaging |
-| `ai-app` | AI Application | Multi-model Chat, Documents |
-| `dashboard` | Admin Panel | Charts, Tables, Reports |
+| `saas` | SaaS Platform | Subscriptions, Teams, Analytics, Billing |
+| `ecommerce` | Online Store | Products, Cart, Checkout, Orders |
+| `social` | Social Network | Posts, Follows, Messaging, Notifications |
+| `ai-app` | AI Application | Multi-model Chat, Documents, RAG |
+| `dashboard` | Admin Panel | Charts, Tables, Reports, RBAC |
+
+### Web Applications
+| Template | Tech Stack | Key Features |
+|----------|------------|--------------|
+| `react-webapp` | React + Tailwind + JS | SPA, Routing, State, Forms |
+| `nextjs-website` | Next.js + Tailwind + TS | Landing Pages, SEO, Animations |
+| `internal-tool` | React + Tailwind + JS | Data Tables, Forms, Export |
+
+### Mobile Applications
+| Template | Tech Stack | Key Features |
+|----------|------------|--------------|
+| `flutter-mobile` | Flutter + Dart | iOS & Android, Material 3, Offline
 
 ## Slash Commands
 

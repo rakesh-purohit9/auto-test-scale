@@ -1,0 +1,185 @@
+{
+  "$schema": "../app-config.schema.json",
+  "version": "1.0.0",
+
+  "app": {
+    "name": "Internal Tool",
+    "description": "Efficient internal business tool with React, Tailwind CSS, and JavaScript for team productivity",
+    "type": "internal-tool",
+    "category": "business"
+  },
+
+  "requirements": {
+    "description": "A powerful internal tool for team operations with data management, workflows, and reporting",
+    "features": [
+      "Role-based access control (RBAC)",
+      "Data tables with advanced filtering",
+      "Bulk operations and actions",
+      "Import/export functionality (CSV, Excel)",
+      "Form builders with validation",
+      "Approval workflows",
+      "Activity audit logs",
+      "Search across all data",
+      "Dashboard with KPIs",
+      "Report generation",
+      "Email notifications",
+      "File attachments",
+      "Comments and notes",
+      "Tags and categorization",
+      "Quick actions and shortcuts",
+      "Keyboard navigation",
+      "Responsive for tablets",
+      "Print-friendly views"
+    ],
+    "screens": [
+      {
+        "name": "Login",
+        "path": "/login",
+        "description": "Internal SSO/login page"
+      },
+      {
+        "name": "Dashboard",
+        "path": "/",
+        "description": "Overview with KPIs, charts, and quick actions"
+      },
+      {
+        "name": "Data Table",
+        "path": "/records",
+        "description": "Main data table with CRUD, filters, bulk actions"
+      },
+      {
+        "name": "Record Detail",
+        "path": "/records/:id",
+        "description": "Single record view with all fields and history"
+      },
+      {
+        "name": "Create/Edit Form",
+        "path": "/records/:id/edit",
+        "description": "Form for creating/editing records"
+      },
+      {
+        "name": "Reports",
+        "path": "/reports",
+        "description": "Report builder and saved reports"
+      },
+      {
+        "name": "Users",
+        "path": "/users",
+        "description": "User management for admins"
+      },
+      {
+        "name": "Settings",
+        "path": "/settings",
+        "description": "System configuration"
+      },
+      {
+        "name": "Audit Log",
+        "path": "/audit",
+        "description": "Activity and change history"
+      },
+      {
+        "name": "Import",
+        "path": "/import",
+        "description": "Bulk data import wizard"
+      }
+    ],
+    "customRequirements": "{{USER_REQUIREMENTS}}"
+  },
+
+  "techStack": {
+    "framework": "react",
+    "version": "18",
+    "language": "javascript",
+    "bundler": "vite",
+    "styling": {
+      "solution": "tailwindcss",
+      "components": "custom",
+      "animations": "minimal"
+    },
+    "routing": "react-router-dom",
+    "state": "zustand",
+    "tables": "@tanstack/react-table",
+    "forms": "react-hook-form",
+    "charts": "recharts",
+    "http": "axios",
+    "icons": "lucide-react",
+    "dates": "date-fns",
+    "export": "xlsx"
+  },
+
+  "projectStructure": {
+    "src/": {
+      "components/": {
+        "ui/": "Base UI components",
+        "forms/": "Form components",
+        "tables/": "Table components",
+        "charts/": "Chart components",
+        "layout/": "Layout components"
+      },
+      "pages/": "Route page components",
+      "hooks/": "Custom React hooks",
+      "context/": "React context (auth, theme)",
+      "services/": "API service functions",
+      "utils/": "Utility functions",
+      "constants/": "App constants",
+      "assets/": "Static assets"
+    }
+  },
+
+  "integrations": {
+    "supabase": {
+      "enabled": true,
+      "features": {
+        "auth": true,
+        "database": true,
+        "storage": true,
+        "realtime": false
+      }
+    },
+    "ai": {
+      "enabled": false,
+      "optional": true,
+      "useFor": "data analysis, auto-categorization"
+    },
+    "email": {
+      "enabled": true,
+      "provider": "resend"
+    }
+  },
+
+  "design": {
+    "theme": "functional",
+    "colorScheme": {
+      "primary": "#3b82f6",
+      "secondary": "#64748b",
+      "accent": "#22c55e",
+      "warning": "#f59e0b",
+      "error": "#ef4444"
+    },
+    "typography": {
+      "fontFamily": "Inter"
+    },
+    "density": "compact",
+    "focusOnUsability": true
+  },
+
+  "security": {
+    "rbac": true,
+    "auditLog": true,
+    "sessionManagement": true,
+    "ipWhitelist": "optional"
+  },
+
+  "quality": {
+    "tenX": {
+      "ui": true,
+      "details": true,
+      "perfection": true,
+      "efficiency": true
+    },
+    "testing": {
+      "unit": true,
+      "integration": true
+    }
+  }
+}

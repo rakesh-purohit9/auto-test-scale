@@ -1,0 +1,217 @@
+{
+  "$schema": "../app-config.schema.json",
+  "version": "1.0.0",
+
+  "app": {
+    "name": "Next.js Website & Landing Page",
+    "description": "High-performance marketing website and landing pages with Next.js, Tailwind CSS, and TypeScript",
+    "type": "nextjs-website",
+    "category": "marketing"
+  },
+
+  "requirements": {
+    "description": "A stunning, conversion-optimized website with beautiful animations and SEO optimization",
+    "features": [
+      "Server-side rendering for SEO",
+      "Static site generation for performance",
+      "Hero sections with animations",
+      "Feature showcases with icons",
+      "Pricing tables with comparison",
+      "Testimonials and social proof",
+      "FAQ accordion sections",
+      "Contact forms with validation",
+      "Newsletter signup",
+      "Blog/content section",
+      "CTA buttons and sections",
+      "Mobile-first responsive design",
+      "Smooth scroll animations",
+      "Meta tags and Open Graph",
+      "Sitemap and robots.txt",
+      "Analytics integration ready",
+      "Performance optimized (Core Web Vitals)",
+      "Accessibility compliant"
+    ],
+    "sections": [
+      {
+        "name": "Hero",
+        "description": "Eye-catching hero with headline, subheadline, CTA, and visual"
+      },
+      {
+        "name": "Features",
+        "description": "Feature grid with icons, titles, and descriptions"
+      },
+      {
+        "name": "How It Works",
+        "description": "Step-by-step process explanation"
+      },
+      {
+        "name": "Benefits",
+        "description": "Key benefits with visuals"
+      },
+      {
+        "name": "Pricing",
+        "description": "Pricing tiers with feature comparison"
+      },
+      {
+        "name": "Testimonials",
+        "description": "Customer reviews and social proof"
+      },
+      {
+        "name": "FAQ",
+        "description": "Frequently asked questions accordion"
+      },
+      {
+        "name": "CTA",
+        "description": "Final call-to-action section"
+      },
+      {
+        "name": "Footer",
+        "description": "Links, social media, legal pages"
+      }
+    ],
+    "pages": [
+      {
+        "name": "Home",
+        "path": "/",
+        "description": "Main landing page with all sections"
+      },
+      {
+        "name": "About",
+        "path": "/about",
+        "description": "Company/product story and team"
+      },
+      {
+        "name": "Features",
+        "path": "/features",
+        "description": "Detailed feature breakdown"
+      },
+      {
+        "name": "Pricing",
+        "path": "/pricing",
+        "description": "Dedicated pricing page"
+      },
+      {
+        "name": "Blog",
+        "path": "/blog",
+        "description": "Blog listing page"
+      },
+      {
+        "name": "Blog Post",
+        "path": "/blog/[slug]",
+        "description": "Individual blog post"
+      },
+      {
+        "name": "Contact",
+        "path": "/contact",
+        "description": "Contact form and information"
+      },
+      {
+        "name": "Privacy",
+        "path": "/privacy",
+        "description": "Privacy policy"
+      },
+      {
+        "name": "Terms",
+        "path": "/terms",
+        "description": "Terms of service"
+      }
+    ],
+    "customRequirements": "{{USER_REQUIREMENTS}}"
+  },
+
+  "techStack": {
+    "framework": "next",
+    "version": "15",
+    "language": "typescript",
+    "styling": {
+      "solution": "tailwindcss",
+      "components": "shadcn-ui",
+      "animations": "framer-motion"
+    },
+    "content": {
+      "type": "mdx",
+      "cms": "optional"
+    },
+    "forms": {
+      "library": "react-hook-form",
+      "validation": "zod"
+    },
+    "seo": "next-seo"
+  },
+
+  "projectStructure": {
+    "src/app/": "Next.js App Router pages",
+    "src/components/": {
+      "ui/": "Base UI components",
+      "sections/": "Page section components",
+      "layout/": "Header, footer, navigation"
+    },
+    "src/lib/": "Utilities and configs",
+    "src/content/": "MDX content files",
+    "public/": "Static assets"
+  },
+
+  "integrations": {
+    "supabase": {
+      "enabled": false,
+      "optional": true,
+      "useFor": "contact forms, newsletter"
+    },
+    "analytics": {
+      "enabled": true,
+      "providers": ["google-analytics", "posthog"]
+    },
+    "email": {
+      "enabled": true,
+      "provider": "resend"
+    }
+  },
+
+  "design": {
+    "theme": "professional",
+    "colorScheme": {
+      "primary": "#0f172a",
+      "secondary": "#64748b",
+      "accent": "#6366f1"
+    },
+    "typography": {
+      "headingFont": "Inter",
+      "bodyFont": "Inter"
+    },
+    "animations": {
+      "scrollReveal": true,
+      "parallax": true,
+      "microInteractions": true
+    }
+  },
+
+  "seo": {
+    "sitemap": true,
+    "robots": true,
+    "openGraph": true,
+    "twitterCards": true,
+    "structuredData": true
+  },
+
+  "performance": {
+    "images": "next/image",
+    "fonts": "next/font",
+    "lazyLoading": true,
+    "prefetching": true
+  },
+
+  "quality": {
+    "tenX": {
+      "ui": true,
+      "details": true,
+      "perfection": true,
+      "conversion": true
+    },
+    "lighthouse": {
+      "performance": 95,
+      "accessibility": 100,
+      "bestPractices": 100,
+      "seo": 100
+    }
+  }
+}

@@ -1,0 +1,209 @@
+{
+  "$schema": "../app-config.schema.json",
+  "version": "1.0.0",
+
+  "app": {
+    "name": "Flutter Mobile Application",
+    "description": "Cross-platform mobile application for iOS and Android built with Flutter and Dart",
+    "type": "flutter-mobile",
+    "category": "mobile"
+  },
+
+  "requirements": {
+    "description": "A beautiful, performant native mobile app with platform-specific design",
+    "features": [
+      "Cross-platform (iOS & Android)",
+      "Material Design 3 / Cupertino widgets",
+      "State management with Riverpod/Bloc",
+      "Navigation with GoRouter",
+      "Offline-first with local storage",
+      "Push notifications",
+      "Biometric authentication",
+      "Camera and gallery access",
+      "Location services",
+      "Deep linking",
+      "App theming (light/dark)",
+      "Localization support",
+      "Splash screen and app icon",
+      "Error handling and crash reporting",
+      "API integration with Dio",
+      "Form validation",
+      "Pull to refresh",
+      "Infinite scroll pagination",
+      "Skeleton loading states",
+      "Toast/snackbar notifications"
+    ],
+    "screens": [
+      {
+        "name": "Splash",
+        "description": "Animated splash screen with logo"
+      },
+      {
+        "name": "Onboarding",
+        "description": "Swipeable onboarding screens for first-time users"
+      },
+      {
+        "name": "Login",
+        "description": "Authentication screen with email/social login"
+      },
+      {
+        "name": "Register",
+        "description": "Sign up screen with form validation"
+      },
+      {
+        "name": "Home",
+        "description": "Main home screen with bottom navigation"
+      },
+      {
+        "name": "List",
+        "description": "Scrollable list with pull-to-refresh"
+      },
+      {
+        "name": "Detail",
+        "description": "Detail screen with hero animation"
+      },
+      {
+        "name": "Profile",
+        "description": "User profile with settings"
+      },
+      {
+        "name": "Settings",
+        "description": "App settings and preferences"
+      },
+      {
+        "name": "Search",
+        "description": "Search with filters and results"
+      }
+    ],
+    "customRequirements": "{{USER_REQUIREMENTS}}"
+  },
+
+  "techStack": {
+    "framework": "flutter",
+    "version": "3.24",
+    "language": "dart",
+    "stateManagement": "riverpod",
+    "navigation": "go_router",
+    "networking": "dio",
+    "localStorage": "hive",
+    "di": "get_it",
+    "packages": [
+      "flutter_riverpod",
+      "go_router",
+      "dio",
+      "hive_flutter",
+      "get_it",
+      "injectable",
+      "freezed",
+      "json_serializable",
+      "flutter_secure_storage",
+      "local_auth",
+      "image_picker",
+      "geolocator",
+      "firebase_messaging",
+      "flutter_local_notifications",
+      "cached_network_image",
+      "shimmer",
+      "flutter_svg",
+      "intl"
+    ]
+  },
+
+  "projectStructure": {
+    "lib/": {
+      "app/": "App configuration and setup",
+      "core/": {
+        "constants/": "App constants",
+        "theme/": "Theme data",
+        "utils/": "Utility functions",
+        "extensions/": "Dart extensions",
+        "errors/": "Error handling"
+      },
+      "data/": {
+        "models/": "Data models",
+        "repositories/": "Data repositories",
+        "datasources/": "Remote and local data sources"
+      },
+      "domain/": {
+        "entities/": "Business entities",
+        "repositories/": "Repository interfaces",
+        "usecases/": "Business logic"
+      },
+      "presentation/": {
+        "screens/": "Screen widgets",
+        "widgets/": "Reusable widgets",
+        "providers/": "Riverpod providers",
+        "controllers/": "Screen controllers"
+      },
+      "l10n/": "Localization files"
+    }
+  },
+
+  "integrations": {
+    "supabase": {
+      "enabled": true,
+      "features": {
+        "auth": true,
+        "database": true,
+        "storage": true,
+        "realtime": true
+      }
+    },
+    "firebase": {
+      "enabled": true,
+      "features": {
+        "messaging": true,
+        "crashlytics": true,
+        "analytics": true
+      }
+    },
+    "ai": {
+      "enabled": false,
+      "optional": true
+    }
+  },
+
+  "design": {
+    "designSystem": "material3",
+    "colorScheme": {
+      "primary": "#6366f1",
+      "secondary": "#8b5cf6",
+      "surface": "#ffffff",
+      "background": "#f8fafc"
+    },
+    "typography": {
+      "fontFamily": "Inter"
+    },
+    "animations": {
+      "pageTransitions": true,
+      "heroAnimations": true,
+      "microInteractions": true
+    }
+  },
+
+  "platforms": {
+    "android": {
+      "minSdk": 21,
+      "targetSdk": 34,
+      "permissions": ["internet", "camera", "location", "notifications"]
+    },
+    "ios": {
+      "minVersion": "12.0",
+      "permissions": ["camera", "location", "notifications"]
+    }
+  },
+
+  "quality": {
+    "tenX": {
+      "ui": true,
+      "details": true,
+      "perfection": true,
+      "nativeExperience": true
+    },
+    "testing": {
+      "unit": true,
+      "widget": true,
+      "integration": true
+    }
+  }
+}
