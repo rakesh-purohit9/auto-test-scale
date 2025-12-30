@@ -1,0 +1,193 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/specification/main/schema/mcp-config.json",
+  "name": "autonomous-app-builder",
+  "description": "MCP configuration for the Autonomous App Builder with trusted network access",
+  "version": "1.0.0",
+  "permissions": {
+    "network": "trusted",
+    "filesystem": {
+      "read": true,
+      "write": true
+    },
+    "execute": true
+  },
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/"],
+      "description": "File system access for reading and writing project files"
+    },
+    "fetch": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "description": "HTTP fetch for API calls and web requests",
+      "env": {
+        "NETWORK_ACCESS": "trusted"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "description": "GitHub integration for repo management",
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "description": "PostgreSQL/Supabase database operations",
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      }
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "description": "Persistent memory for context and state"
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-server-puppeteer"],
+      "description": "Browser automation for testing"
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "description": "Enhanced reasoning and planning"
+    }
+  },
+  "tools": {
+    "bash": {
+      "enabled": true,
+      "allowedCommands": [
+        "npm",
+        "npx",
+        "pnpm",
+        "yarn",
+        "bun",
+        "git",
+        "mkdir",
+        "cd",
+        "ls",
+        "cat",
+        "echo",
+        "rm",
+        "cp",
+        "mv",
+        "curl",
+        "wget",
+        "flutter",
+        "dart",
+        "supabase",
+        "vercel",
+        "netlify"
+      ]
+    },
+    "edit": {
+      "enabled": true,
+      "maxFileSize": "10MB"
+    },
+    "read": {
+      "enabled": true,
+      "maxFileSize": "50MB"
+    },
+    "write": {
+      "enabled": true,
+      "maxFileSize": "10MB"
+    },
+    "webSearch": {
+      "enabled": true,
+      "provider": "perplexity"
+    },
+    "webFetch": {
+      "enabled": true,
+      "allowedDomains": [
+        "api.openai.com",
+        "api.anthropic.com",
+        "generativelanguage.googleapis.com",
+        "api.perplexity.ai",
+        "*.supabase.co",
+        "api.stripe.com",
+        "registry.npmjs.org",
+        "raw.githubusercontent.com",
+        "api.github.com"
+      ]
+    }
+  },
+  "templates": {
+    "saas": {
+      "techStack": ["Next.js 15", "TypeScript", "Tailwind CSS", "Supabase", "Stripe"],
+      "defaultIntegrations": ["auth", "database", "payments", "analytics"]
+    },
+    "ecommerce": {
+      "techStack": ["Next.js 15", "TypeScript", "Tailwind CSS", "Supabase", "Stripe"],
+      "defaultIntegrations": ["auth", "database", "payments", "storage", "search"]
+    },
+    "social": {
+      "techStack": ["Next.js 15", "TypeScript", "Tailwind CSS", "Supabase"],
+      "defaultIntegrations": ["auth", "database", "realtime", "storage"]
+    },
+    "ai-app": {
+      "techStack": ["Next.js 15", "TypeScript", "Tailwind CSS", "OpenAI/Claude/Gemini"],
+      "defaultIntegrations": ["auth", "ai-chat", "rag", "streaming"]
+    },
+    "dashboard": {
+      "techStack": ["Next.js 15", "TypeScript", "Tailwind CSS", "Recharts"],
+      "defaultIntegrations": ["auth", "database", "charts", "export"]
+    },
+    "react-webapp": {
+      "techStack": ["React 18", "Vite", "JavaScript", "Tailwind CSS", "Zustand"],
+      "defaultIntegrations": ["routing", "state", "forms"]
+    },
+    "nextjs-website": {
+      "techStack": ["Next.js 15", "TypeScript", "Tailwind CSS", "Framer Motion"],
+      "defaultIntegrations": ["seo", "analytics", "forms"]
+    },
+    "flutter-mobile": {
+      "techStack": ["Flutter", "Dart", "Riverpod", "GoRouter"],
+      "defaultIntegrations": ["auth", "push-notifications", "offline"]
+    },
+    "internal-tool": {
+      "techStack": ["React 18", "Vite", "JavaScript", "TanStack Table"],
+      "defaultIntegrations": ["auth", "crud", "export", "rbac"]
+    }
+  },
+  "aiProviders": {
+    "openai": {
+      "models": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"],
+      "features": ["chat", "embeddings", "vision", "function-calling"]
+    },
+    "anthropic": {
+      "models": ["claude-sonnet-4-20250514", "claude-3-opus", "claude-3-haiku"],
+      "features": ["chat", "vision", "long-context"]
+    },
+    "gemini": {
+      "models": ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"],
+      "features": ["chat", "multimodal", "long-context"]
+    },
+    "perplexity": {
+      "models": ["sonar-medium-online", "sonar-small-online"],
+      "features": ["search", "citations", "realtime"]
+    }
+  },
+  "qualityThresholds": {
+    "minScore": 90,
+    "categories": {
+      "codeQuality": { "min": 85, "weight": 0.2 },
+      "uiux": { "min": 85, "weight": 0.25 },
+      "performance": { "min": 80, "weight": 0.15 },
+      "security": { "min": 90, "weight": 0.2 },
+      "functionality": { "min": 85, "weight": 0.2 }
+    }
+  },
+  "autoSettings": {
+    "autoFix": true,
+    "autoTest": true,
+    "autoReview": true,
+    "autoIterate": true,
+    "maxIterations": 3,
+    "autoSupabase": true,
+    "autoAI": true
+  }
+}

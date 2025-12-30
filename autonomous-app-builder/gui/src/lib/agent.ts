@@ -2,14 +2,19 @@
  * Autonomous Agent Orchestrator
  *
  * This agent manages the entire app building process autonomously:
+ * - Analyzes requirements and generates unique designs
  * - Executes commands automatically
  * - Reviews and iterates on code
  * - Fixes errors automatically
  * - Tests the application
  * - Implements Supabase auth and AI integration
+ * - Uses MCP servers for enhanced capabilities
  */
 
 import { BuildConfig, BuildStep } from './store'
+import { getDesignSystem, DesignSystem, generateTailwindConfig, generateCSSVariables } from './design-systems'
+import { generateAppStructure, analyzeRequirements, AppStructure, PageSpec, generatePagePrompt } from './page-planner'
+import { generateMegaSystemPrompt, getTailwindConfigContent, getGlobalsCSSContent, getAIIntegrationCode, getSupabaseIntegrationCode } from './mega-prompts'
 
 export type AgentPhase =
   | 'planning'
@@ -29,11 +34,12 @@ export type AgentPhase =
   | 'complete'
 
 export type AgentAction = {
-  type: 'command' | 'write' | 'edit' | 'review' | 'test' | 'fix'
+  type: 'command' | 'write' | 'edit' | 'review' | 'test' | 'fix' | 'mcp'
   description: string
   target?: string
   content?: string
   command?: string
+  mcpServer?: string
 }
 
 export type AgentLog = {
@@ -56,353 +62,743 @@ export type AgentState = {
   iterationCount: number
   reviewScore: number
   testsPassed: boolean
+  designSystem: DesignSystem | null
+  appStructure: AppStructure | null
 }
 
-// Mega prompt sections for comprehensive building
-export const MEGA_PROMPT_SECTIONS = {
-  planning: `
-## Phase 1: Intelligent Planning
+// ============================================================================
+// CLAUDE CODE COMMAND GENERATOR
+// ============================================================================
 
-Analyze the requirements and create a comprehensive build plan:
+export function generateClaudeCodeCommand(config: BuildConfig): string {
+  const megaPrompt = generateMegaSystemPrompt(config)
 
-1. **Parse Requirements**:
-   - Extract core features from user description
-   - Identify implicit requirements
-   - Determine data models and relationships
-   - Map user flows and navigation
+  // Escape the prompt for shell usage
+  const escapedPrompt = megaPrompt
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\$/g, '\\$')
+    .replace(/`/g, '\\`')
 
-2. **Architecture Decision**:
-   - Choose optimal folder structure
-   - Plan component hierarchy
-   - Design state management approach
-   - Determine API structure
-
-3. **Database Schema**:
-   - Design tables based on features
-   - Plan relationships (1:1, 1:N, N:N)
-   - Create RLS policies for security
-   - Plan indexes for performance
-
-4. **AI Integration Points**:
-   - Identify where AI adds value
-   - Choose appropriate AI tasks (chat, analysis, generation)
-   - Plan prompt templates
-   - Design fallback behaviors
-`,
-
-  scaffolding: `
-## Phase 2: Project Scaffolding
-
-Create the project with optimal configuration:
-
-1. **Initialize Project**:
-   - Create with latest framework version
-   - Configure TypeScript strict mode
-   - Set up path aliases
-   - Configure environment handling
-
-2. **Install Core Dependencies**:
-   - Framework essentials
-   - UI library (Tailwind + shadcn)
-   - State management (Zustand)
-   - Form handling (React Hook Form + Zod)
-   - Data fetching (TanStack Query)
-
-3. **Project Structure**:
-   - Create all necessary directories
-   - Set up component organization
-   - Configure absolute imports
-   - Add utility files
-`,
-
-  database: `
-## Phase 3: Database & Supabase Setup
-
-Implement complete Supabase integration:
-
-1. **Schema Creation**:
-   - Create all tables with proper types
-   - Add foreign key relationships
-   - Create indexes for queries
-   - Add created_at/updated_at triggers
-
-2. **Row Level Security**:
-   - Enable RLS on all tables
-   - Create policies for CRUD operations
-   - Implement team/org-based access
-   - Add admin bypass policies
-
-3. **Storage Buckets**:
-   - Create buckets for file uploads
-   - Set up access policies
-   - Configure file size limits
-   - Add allowed MIME types
-
-4. **Edge Functions** (if needed):
-   - Create serverless functions
-   - Set up webhook handlers
-   - Implement background jobs
-`,
-
-  auth: `
-## Phase 4: Authentication System
-
-Implement complete auth flow:
-
-1. **Auth Provider Setup**:
-   - Configure Supabase Auth
-   - Set up OAuth providers (Google, GitHub)
-   - Configure magic link emails
-   - Set up password reset flow
-
-2. **Auth Components**:
-   - Login page with all auth methods
-   - Registration with validation
-   - Password reset flow
-   - Email verification handling
-
-3. **Auth Context**:
-   - Create auth provider
-   - Implement session management
-   - Add loading states
-   - Handle auth errors
-
-4. **Protected Routes**:
-   - Create middleware for protection
-   - Implement role-based access
-   - Add redirect logic
-   - Handle expired sessions
-`,
-
-  components: `
-## Phase 5: UI Components (10x Quality)
-
-Build stunning, reusable components:
-
-1. **Design System**:
-   - Configure color palette
-   - Set up typography scale
-   - Define spacing system
-   - Create animation tokens
-
-2. **Base Components**:
-   - Button (all variants, sizes, states)
-   - Input (with validation, icons)
-   - Card (with hover, selection)
-   - Modal (with animations)
-   - Toast (success, error, info)
-   - Loading (skeleton, spinner)
-
-3. **Layout Components**:
-   - Sidebar (collapsible, responsive)
-   - Header (with search, user menu)
-   - Footer (with links)
-   - Page wrapper
-
-4. **Feature Components**:
-   - Data tables (sort, filter, paginate)
-   - Forms (multi-step, validation)
-   - Charts (if needed)
-   - File upload (drag & drop)
-`,
-
-  aiIntegration: `
-## Phase 6: AI Integration
-
-Implement intelligent AI features:
-
-1. **AI Client Setup**:
-   - Configure selected provider
-   - Set up streaming support
-   - Implement error handling
-   - Add retry logic
-
-2. **Chat Interface** (if applicable):
-   - Create chat component
-   - Implement message history
-   - Add typing indicators
-   - Support markdown rendering
-
-3. **AI Features**:
-   - Content generation
-   - Data analysis
-   - Smart suggestions
-   - Auto-categorization
-
-4. **Prompt Engineering**:
-   - Create system prompts
-   - Build prompt templates
-   - Implement context injection
-   - Add output parsing
-`,
-
-  testing: `
-## Phase 7: Automated Testing
-
-Implement comprehensive testing:
-
-1. **Unit Tests**:
-   - Test utility functions
-   - Test hooks
-   - Test state logic
-   - Mock external services
-
-2. **Component Tests**:
-   - Test rendering
-   - Test interactions
-   - Test accessibility
-   - Test responsive behavior
-
-3. **Integration Tests**:
-   - Test API routes
-   - Test database operations
-   - Test auth flows
-   - Test form submissions
-
-4. **E2E Tests**:
-   - Test critical user flows
-   - Test navigation
-   - Test error handling
-   - Test mobile views
-`,
-
-  review: `
-## Phase 8: 10x Quality Review
-
-Perform comprehensive quality audit:
-
-1. **Code Quality**:
-   - Check TypeScript strictness
-   - Verify no unused code
-   - Ensure consistent patterns
-   - Validate error handling
-
-2. **UI/UX Quality**:
-   - Verify responsive design
-   - Check animations smoothness
-   - Validate accessibility
-   - Test dark/light modes
-
-3. **Performance**:
-   - Check bundle size
-   - Verify lazy loading
-   - Optimize images
-   - Check Core Web Vitals
-
-4. **Security**:
-   - Verify RLS policies
-   - Check input validation
-   - Validate auth flows
-   - Review API security
-
-5. **Scoring**:
-   - Rate each category 1-10
-   - Calculate overall score
-   - Identify improvements
-   - Prioritize fixes
-`,
+  return `claude --dangerously-skip-permissions -p "${escapedPrompt}"`
 }
 
-// Generate mega prompt for building
-export function generateMegaPrompt(config: BuildConfig): string {
-  const { template, requirements, appName, supabase, ai, features } = config
+// ============================================================================
+// AUTONOMOUS BUILD ORCHESTRATOR
+// ============================================================================
 
-  return `
-# AUTONOMOUS APP BUILDER - MEGA PROMPT
-# =====================================
+export interface BuildContext {
+  config: BuildConfig
+  designSystem: DesignSystem
+  appStructure: AppStructure
+  projectPath: string
+}
 
-You are an elite autonomous app builder. Your mission is to create a **production-ready, 10x quality** application with ZERO human intervention.
+export function createBuildContext(config: BuildConfig): BuildContext {
+  const templateId = config.template?.id || 'saas'
+  const designSystem = getDesignSystem(templateId)
+  const appStructure = generateAppStructure(templateId, config.requirements)
+  const projectPath = `${config.projectPath}/${config.appName}`
 
-## PROJECT CONFIGURATION
+  return {
+    config,
+    designSystem,
+    appStructure,
+    projectPath,
+  }
+}
 
-**App Name**: ${appName}
-**Template**: ${template?.name} (${template?.id})
-**Tech Stack**: ${template?.techStack.join(', ')}
+// ============================================================================
+// PHASE-SPECIFIC PROMPTS WITH DESIGN SYSTEM
+// ============================================================================
 
-## USER REQUIREMENTS
+export function getPhasePrompt(phase: AgentPhase, context: BuildContext): string {
+  const { config, designSystem, appStructure, projectPath } = context
 
-${requirements}
+  switch (phase) {
+    case 'planning':
+      return `
+# PHASE: INTELLIGENT PLANNING
 
-## INTEGRATIONS
+You are analyzing requirements for: ${config.appName}
+Template: ${config.template?.name}
 
-### Supabase: ${supabase.enabled ? 'ENABLED' : 'DISABLED'}
-${supabase.enabled ? `
-- URL: ${supabase.url || 'Configure in .env.local'}
-- Features: Database, Auth, Storage, Realtime
-- Implement complete RLS policies
-- Auto-create auth system
-` : ''}
+## User Requirements:
+${config.requirements}
 
-### AI Integration: ${ai.enabled ? 'ENABLED' : 'DISABLED'}
-${ai.enabled ? `
-- Provider: ${ai.provider}
-- Implement streaming chat if applicable
-- Add smart features based on app type
-` : ''}
+## Detected Features:
+${JSON.stringify(analyzeRequirements(config.requirements), null, 2)}
 
-### Features
-- Authentication: ${features.auth ? 'YES' : 'NO'}
-- Dark Mode: ${features.darkMode ? 'YES' : 'NO'}
-- Analytics: ${features.analytics ? 'YES' : 'NO'}
-- Payments: ${features.payments ? 'YES' : 'NO'}
+## Generated App Structure:
+${JSON.stringify(appStructure, null, 2)}
 
----
+## Design System: ${designSystem.name}
+- Primary Color: ${designSystem.colors.primary}
+- Layout Pattern: ${designSystem.layout.skimmingPattern}
+- Typography: ${designSystem.typography.fontFamily.heading}
 
-${MEGA_PROMPT_SECTIONS.planning}
+## Tasks:
+1. Validate the detected features
+2. Identify any missing requirements
+3. Finalize the page structure
+4. Confirm database schema needs
+5. Output a build plan
 
-${MEGA_PROMPT_SECTIONS.scaffolding}
-
-${supabase.enabled ? MEGA_PROMPT_SECTIONS.database : ''}
-
-${features.auth ? MEGA_PROMPT_SECTIONS.auth : ''}
-
-${MEGA_PROMPT_SECTIONS.components}
-
-${ai.enabled ? MEGA_PROMPT_SECTIONS.aiIntegration : ''}
-
-${MEGA_PROMPT_SECTIONS.testing}
-
-${MEGA_PROMPT_SECTIONS.review}
-
----
-
-## AUTONOMOUS EXECUTION RULES
-
-1. **Never Stop**: Continue until the app is complete and working
-2. **Auto-Fix**: If any error occurs, fix it immediately
-3. **Test Everything**: Run tests after each major change
-4. **Review & Iterate**: After completion, review and improve
-5. **No Placeholders**: Implement everything fully, no TODOs
-6. **10x Quality**: Every element must be polished and professional
-
-## OUTPUT REQUIREMENTS
-
-Save all files to: ./projects/${appName}/
-
-After completion, provide:
-1. Full project structure
-2. Setup instructions
-3. Environment variables needed
-4. Feature summary
-5. Quality score (1-100)
-6. Suggested improvements
-
----
-
-BEGIN AUTONOMOUS BUILD NOW.
+## Output:
+Provide a detailed JSON build plan with all pages, components, and integrations.
 `
+
+    case 'scaffolding':
+      return `
+# PHASE: PROJECT SCAFFOLDING
+
+Create the project at: ${projectPath}
+
+## Commands to Execute:
+\`\`\`bash
+mkdir -p ${projectPath}
+cd ${projectPath}
+npx create-next-app@latest . --typescript --tailwind --app --import-alias "@/*" --no-eslint
+\`\`\`
+
+## After Scaffolding:
+1. Replace tailwind.config.ts with:
+\`\`\`typescript
+${getTailwindConfigContent(config.template?.id || 'saas')}
+\`\`\`
+
+2. Replace src/app/globals.css with:
+\`\`\`css
+${getGlobalsCSSContent(config.template?.id || 'saas')}
+\`\`\`
+
+3. Create folder structure:
+\`\`\`
+src/
+├── components/
+│   ├── ui/
+│   ├── layouts/
+│   └── features/
+├── lib/
+├── hooks/
+├── types/
+└── providers/
+\`\`\`
+
+Execute all commands and create all files.
+`
+
+    case 'dependencies':
+      const deps = getDependenciesForTemplate(config.template?.id || 'saas', config)
+      return `
+# PHASE: INSTALL DEPENDENCIES
+
+## Core Dependencies:
+\`\`\`bash
+cd ${projectPath}
+npm install ${deps.core.join(' ')}
+\`\`\`
+
+## UI Dependencies:
+\`\`\`bash
+npm install ${deps.ui.join(' ')}
+\`\`\`
+
+## Feature Dependencies:
+\`\`\`bash
+npm install ${deps.features.join(' ')}
+\`\`\`
+
+## Dev Dependencies:
+\`\`\`bash
+npm install -D ${deps.dev.join(' ')}
+\`\`\`
+
+Execute all npm install commands.
+`
+
+    case 'database':
+      return `
+# PHASE: DATABASE SETUP
+
+## Supabase Configuration:
+${config.supabase.enabled ? `
+1. Create Supabase client at ${projectPath}/src/lib/supabase.ts:
+\`\`\`typescript
+${getSupabaseIntegrationCode()}
+\`\`\`
+
+2. Create database schema based on detected entities:
+${appStructure.types.map(t => `- ${t}`).join('\n')}
+
+3. Set up Row Level Security policies
+
+4. Create storage buckets if needed
+` : 'Supabase is disabled. Skip this phase.'}
+`
+
+    case 'auth':
+      return `
+# PHASE: AUTHENTICATION
+
+${config.features.auth ? `
+## Create Auth System:
+
+1. Create auth provider at ${projectPath}/src/providers/AuthProvider.tsx
+
+2. Create auth pages:
+   - ${projectPath}/src/app/auth/login/page.tsx
+   - ${projectPath}/src/app/auth/signup/page.tsx
+   - ${projectPath}/src/app/auth/forgot-password/page.tsx
+
+3. Create auth middleware at ${projectPath}/src/middleware.ts
+
+4. Use design system colors:
+   - Primary: ${designSystem.colors.primary}
+   - Background: ${designSystem.colors.background}
+   - Button style: ${designSystem.components.button.style}
+
+5. Follow ${designSystem.layout.skimmingPattern} layout pattern
+` : 'Authentication is disabled. Skip this phase.'}
+`
+
+    case 'components':
+      return `
+# PHASE: UI COMPONENTS
+
+Build all shared components using the ${designSystem.name} design system.
+
+## Design Specifications:
+- Colors: Primary ${designSystem.colors.primary}, Secondary ${designSystem.colors.secondary}
+- Border Radius: ${designSystem.borderRadius.lg} for cards, ${designSystem.borderRadius.md} for buttons
+- Shadows: ${designSystem.shadows.md}
+- Animation: ${designSystem.animation.duration.normal} with ${designSystem.animation.easing.default}
+
+## Components to Create:
+${appStructure.sharedComponents.map(c => `
+### ${c.name}
+- Type: ${c.type}
+- Path: ${projectPath}/src/components/ui/${c.name}.tsx
+- Props: ${c.props.join(', ') || 'standard'}
+- Style: Follow ${designSystem.components.button.style} design
+`).join('')}
+
+## Component Guidelines:
+- Use ${designSystem.iconStyle.library} icons with stroke-width: ${designSystem.iconStyle.strokeWidth}
+- Apply ${designSystem.components.card.hover} hover effect to cards
+- Use ${designSystem.components.input.style} style for inputs
+- Include loading states and animations
+`
+
+    case 'pages':
+      return `
+# PHASE: BUILD PAGES
+
+Create all pages following the ${designSystem.layout.skimmingPattern} layout pattern.
+
+## Pages to Create:
+${appStructure.pages.map(page => generatePagePrompt(page, designSystem)).join('\n\n---\n\n')}
+
+## Layout Guidelines:
+- Max width: ${designSystem.layout.maxWidth}
+- Grid: ${designSystem.layout.gridColumns} columns
+- Section gap: ${designSystem.spacing.sectionGap}
+- Container padding: ${designSystem.spacing.containerPadding}
+`
+
+    case 'features':
+      return `
+# PHASE: IMPLEMENT FEATURES
+
+## Core Features:
+${appStructure.pages
+  .flatMap(p => p.features)
+  .filter((f, i, arr) => arr.indexOf(f) === i)
+  .map(f => `- ${f}`)
+  .join('\n')}
+
+## Implementation Order:
+1. CRUD operations
+2. Form validations
+3. API routes
+4. Real-time updates
+5. Error handling
+6. Loading states
+
+## Quality Standards:
+- No console.log statements in production
+- Proper TypeScript types
+- Error boundaries
+- Optimistic updates where applicable
+`
+
+    case 'ai-integration':
+      return `
+# PHASE: AI INTEGRATION
+
+${config.ai.enabled ? `
+## AI Provider: ${config.ai.provider}
+
+1. Create AI client at ${projectPath}/src/lib/ai.ts:
+\`\`\`typescript
+${getAIIntegrationCode()}
+\`\`\`
+
+2. Create AI features based on app type:
+${getAIFeaturesForTemplate(config.template?.id || 'saas')}
+
+3. Implement streaming for chat interfaces
+
+4. Add proper error handling and fallbacks
+` : 'AI integration is disabled. Skip this phase.'}
+`
+
+    case 'testing':
+      return `
+# PHASE: AUTOMATED TESTING
+
+## Run All Tests:
+\`\`\`bash
+cd ${projectPath}
+npm run lint
+npm run type-check
+npm run build
+npm run test
+\`\`\`
+
+## For Each Failure:
+1. Identify the root cause
+2. Apply the fix immediately
+3. Re-run the failed test
+4. Continue until all pass
+
+## Quality Gates:
+- Zero TypeScript errors
+- Zero ESLint errors
+- Build must succeed
+- All tests must pass
+`
+
+    case 'review':
+      return `
+# PHASE: 10x QUALITY REVIEW
+
+## Review Criteria:
+
+### Code Quality (Weight: 20%)
+- TypeScript strictness
+- No unused code
+- Consistent patterns
+- Proper error handling
+
+### UI/UX (Weight: 25%)
+- Matches ${designSystem.name} design system
+- Responsive design
+- Smooth animations
+- Accessibility (WCAG 2.1)
+
+### Performance (Weight: 15%)
+- Bundle size < 300KB initial
+- Core Web Vitals pass
+- Lazy loading implemented
+- Image optimization
+
+### Security (Weight: 20%)
+- Auth flows secure
+- RLS policies correct
+- Input validation
+- No exposed secrets
+
+### Functionality (Weight: 20%)
+- All features work
+- Edge cases handled
+- Error states work
+- Empty states work
+
+## Minimum Score: 90/100
+
+Output a detailed review with scores and issues.
+`
+
+    case 'fixing':
+      return `
+# PHASE: AUTO-FIX ISSUES
+
+Review the issues identified and fix each one:
+
+1. For each issue:
+   - Understand the root cause
+   - Apply the correct fix
+   - Verify the fix works
+
+2. Re-run quality checks after fixes
+
+3. Continue until score >= 90
+
+## Priority:
+1. Critical issues first
+2. High severity second
+3. Medium/Low last
+`
+
+    case 'iteration':
+      return `
+# PHASE: ITERATION
+
+Re-run the quality review after fixes.
+
+If score < 90:
+- Identify remaining issues
+- Apply additional fixes
+- Repeat until passing
+
+Maximum iterations: 3
+`
+
+    case 'complete':
+      return `
+# PHASE: COMPLETION
+
+## Final Tasks:
+1. Generate README.md with:
+   - Project description
+   - Setup instructions
+   - Environment variables
+   - Available scripts
+   - Feature list
+
+2. Create .env.example with all required variables
+
+3. Final verification:
+   - Build passes
+   - Dev server starts
+   - All features work
+
+4. Output:
+   - Final quality score
+   - Project location: ${projectPath}
+   - Next steps for user
+`
+
+    default:
+      return ''
+  }
 }
 
-// Generate file edit prompt
+// ============================================================================
+// DEPENDENCY RESOLVER
+// ============================================================================
+
+interface Dependencies {
+  core: string[]
+  ui: string[]
+  features: string[]
+  dev: string[]
+}
+
+function getDependenciesForTemplate(templateId: string, config: BuildConfig): Dependencies {
+  const baseDeps: Dependencies = {
+    core: [
+      'zustand',
+      'react-hook-form',
+      '@hookform/resolvers',
+      'zod',
+      '@tanstack/react-query',
+      'clsx',
+      'tailwind-merge',
+      'class-variance-authority',
+    ],
+    ui: [
+      'framer-motion',
+      'lucide-react',
+      'sonner',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-tooltip',
+      '@radix-ui/react-switch',
+      '@radix-ui/react-select',
+    ],
+    features: [],
+    dev: [
+      '@types/node',
+      '@types/react',
+      'typescript',
+      'prettier',
+      'eslint',
+    ],
+  }
+
+  // Add Supabase deps
+  if (config.supabase.enabled) {
+    baseDeps.core.push('@supabase/supabase-js', '@supabase/ssr')
+  }
+
+  // Add AI deps
+  if (config.ai.enabled) {
+    switch (config.ai.provider) {
+      case 'openai':
+        baseDeps.features.push('openai')
+        break
+      case 'anthropic':
+        baseDeps.features.push('@anthropic-ai/sdk')
+        break
+      case 'gemini':
+        baseDeps.features.push('@google/generative-ai')
+        break
+      case 'perplexity':
+        baseDeps.features.push('openai') // Uses OpenAI-compatible API
+        break
+    }
+  }
+
+  // Add template-specific deps
+  switch (templateId) {
+    case 'ecommerce':
+      baseDeps.features.push('@stripe/stripe-js', 'stripe', 'embla-carousel-react')
+      break
+    case 'social':
+      baseDeps.features.push('react-textarea-autosize', 'react-virtuoso')
+      break
+    case 'ai-app':
+      baseDeps.features.push('react-markdown', 'remark-gfm', 'react-syntax-highlighter')
+      break
+    case 'dashboard':
+      baseDeps.features.push('recharts', '@tanstack/react-table', 'react-day-picker', 'date-fns')
+      break
+    case 'nextjs-website':
+      baseDeps.features.push('next-seo', '@vercel/analytics')
+      break
+    case 'internal-tool':
+      baseDeps.features.push('@tanstack/react-table', 'xlsx', 'file-saver')
+      break
+  }
+
+  // Add payment deps
+  if (config.features.payments) {
+    baseDeps.features.push('@stripe/stripe-js', 'stripe')
+  }
+
+  return baseDeps
+}
+
+// ============================================================================
+// AI FEATURES BY TEMPLATE
+// ============================================================================
+
+function getAIFeaturesForTemplate(templateId: string): string {
+  const features: Record<string, string> = {
+    saas: `
+- Smart content suggestions
+- AI-powered search
+- Auto-categorization
+- Usage analytics insights`,
+    ecommerce: `
+- Product recommendations
+- Smart search with natural language
+- Review sentiment analysis
+- Automated product descriptions`,
+    social: `
+- Content moderation
+- Smart feed ranking
+- Suggested connections
+- Caption generation`,
+    'ai-app': `
+- Multi-model chat interface
+- Document analysis (RAG)
+- Content generation
+- Code assistance
+- Streaming responses`,
+    dashboard: `
+- Natural language queries
+- Anomaly detection
+- Report generation
+- Predictive analytics`,
+    'react-webapp': `
+- Smart suggestions
+- Content generation
+- Search enhancement`,
+    'nextjs-website': `
+- Content optimization
+- SEO suggestions
+- Copy generation`,
+    'flutter-mobile': `
+- Smart notifications
+- Content personalization
+- Voice commands`,
+    'internal-tool': `
+- Data extraction
+- Report generation
+- Natural language queries`,
+  }
+
+  return features[templateId] || features.saas
+}
+
+// ============================================================================
+// AGENT STEPS
+// ============================================================================
+
+export const AGENT_STEPS: BuildStep[] = [
+  { id: 'planning', title: 'Analyzing Requirements & Design', status: 'pending' },
+  { id: 'scaffolding', title: 'Creating Project Structure', status: 'pending' },
+  { id: 'dependencies', title: 'Installing Dependencies', status: 'pending' },
+  { id: 'database', title: 'Setting Up Database', status: 'pending' },
+  { id: 'auth', title: 'Implementing Authentication', status: 'pending' },
+  { id: 'components', title: 'Building UI Components', status: 'pending' },
+  { id: 'pages', title: 'Creating Pages', status: 'pending' },
+  { id: 'features', title: 'Implementing Features', status: 'pending' },
+  { id: 'ai', title: 'Adding AI Integration', status: 'pending' },
+  { id: 'testing', title: 'Running Tests', status: 'pending' },
+  { id: 'review', title: '10x Quality Review', status: 'pending' },
+  { id: 'fixing', title: 'Auto-Fixing Issues', status: 'pending' },
+  { id: 'complete', title: 'Finalizing Build', status: 'pending' },
+]
+
+// ============================================================================
+// AGENT ACTIONS FOR EACH PHASE
+// ============================================================================
+
+export function getAgentActionsForPhase(phase: AgentPhase): AgentAction[] {
+  const actions: Record<AgentPhase, AgentAction[]> = {
+    planning: [
+      { type: 'mcp', description: 'Loading sequential thinking MCP', mcpServer: 'sequential-thinking' },
+      { type: 'review', description: 'Analyzing user requirements' },
+      { type: 'review', description: 'Generating unique design system' },
+      { type: 'review', description: 'Planning pages and components' },
+      { type: 'review', description: 'Designing database schema' },
+    ],
+    scaffolding: [
+      { type: 'mcp', description: 'Connecting to filesystem MCP', mcpServer: 'filesystem' },
+      { type: 'command', description: 'Creating project directory', command: 'mkdir -p' },
+      { type: 'command', description: 'Initializing Next.js project', command: 'npx create-next-app@latest' },
+      { type: 'write', description: 'Configuring Tailwind with design system' },
+      { type: 'write', description: 'Creating CSS variables' },
+      { type: 'write', description: 'Setting up folder structure' },
+    ],
+    dependencies: [
+      { type: 'command', description: 'Installing core packages', command: 'npm install zustand react-hook-form' },
+      { type: 'command', description: 'Installing UI packages', command: 'npm install framer-motion lucide-react' },
+      { type: 'command', description: 'Installing Supabase', command: 'npm install @supabase/supabase-js' },
+      { type: 'command', description: 'Installing AI SDK', command: 'npm install openai @anthropic-ai/sdk' },
+    ],
+    configuration: [
+      { type: 'write', description: 'Creating environment configuration' },
+      { type: 'write', description: 'Setting up Supabase client' },
+      { type: 'write', description: 'Configuring AI providers' },
+      { type: 'write', description: 'Setting up path aliases' },
+    ],
+    database: [
+      { type: 'mcp', description: 'Connecting to PostgreSQL MCP', mcpServer: 'postgres' },
+      { type: 'write', description: 'Creating database schema' },
+      { type: 'write', description: 'Setting up RLS policies' },
+      { type: 'write', description: 'Creating storage buckets' },
+      { type: 'command', description: 'Running migrations', command: 'supabase db push' },
+    ],
+    auth: [
+      { type: 'write', description: 'Creating AuthProvider' },
+      { type: 'write', description: 'Building login page with design system' },
+      { type: 'write', description: 'Building signup page' },
+      { type: 'write', description: 'Creating auth middleware' },
+      { type: 'write', description: 'Implementing OAuth handlers' },
+    ],
+    components: [
+      { type: 'write', description: 'Creating Button with unique styling' },
+      { type: 'write', description: 'Creating Card with hover effects' },
+      { type: 'write', description: 'Creating Input with validation' },
+      { type: 'write', description: 'Creating Modal with animations' },
+      { type: 'write', description: 'Creating Sidebar' },
+      { type: 'write', description: 'Creating Header' },
+      { type: 'write', description: 'Creating Toast notifications' },
+    ],
+    pages: [
+      { type: 'write', description: 'Creating root layout' },
+      { type: 'write', description: 'Building landing page' },
+      { type: 'write', description: 'Building dashboard' },
+      { type: 'write', description: 'Creating feature pages' },
+      { type: 'write', description: 'Adding page transitions' },
+    ],
+    features: [
+      { type: 'write', description: 'Implementing CRUD operations' },
+      { type: 'write', description: 'Adding form validations' },
+      { type: 'write', description: 'Creating API routes' },
+      { type: 'write', description: 'Adding real-time updates' },
+      { type: 'write', description: 'Implementing error handling' },
+    ],
+    'ai-integration': [
+      { type: 'mcp', description: 'Connecting to fetch MCP', mcpServer: 'fetch' },
+      { type: 'write', description: 'Setting up multi-provider AI client' },
+      { type: 'write', description: 'Creating chat interface' },
+      { type: 'write', description: 'Implementing streaming' },
+      { type: 'write', description: 'Adding AI features' },
+    ],
+    testing: [
+      { type: 'command', description: 'Running ESLint', command: 'npm run lint' },
+      { type: 'command', description: 'Running TypeScript check', command: 'npx tsc --noEmit' },
+      { type: 'command', description: 'Building project', command: 'npm run build' },
+      { type: 'command', description: 'Running tests', command: 'npm run test' },
+    ],
+    review: [
+      { type: 'review', description: 'Reviewing code quality' },
+      { type: 'review', description: 'Checking design system compliance' },
+      { type: 'review', description: 'Auditing performance' },
+      { type: 'review', description: 'Validating security' },
+      { type: 'review', description: 'Calculating 10x quality score' },
+    ],
+    fixing: [
+      { type: 'fix', description: 'Fixing critical issues' },
+      { type: 'fix', description: 'Improving code quality' },
+      { type: 'fix', description: 'Enhancing UI polish' },
+      { type: 'fix', description: 'Optimizing performance' },
+    ],
+    iteration: [
+      { type: 'review', description: 'Re-reviewing after fixes' },
+      { type: 'test', description: 'Re-running all tests' },
+      { type: 'review', description: 'Recalculating quality score' },
+    ],
+    complete: [
+      { type: 'write', description: 'Generating README.md' },
+      { type: 'write', description: 'Creating .env.example' },
+      { type: 'review', description: 'Final verification' },
+      { type: 'review', description: 'Outputting project summary' },
+    ],
+  }
+
+  return actions[phase] || []
+}
+
+// ============================================================================
+// LEGACY EXPORTS FOR COMPATIBILITY
+// ============================================================================
+
+export const MEGA_PROMPT_SECTIONS = {
+  planning: `## Phase 1: Intelligent Planning with Unique Design System`,
+  scaffolding: `## Phase 2: Project Scaffolding with Custom Configuration`,
+  database: `## Phase 3: Database & Supabase Setup with Auto-Auth`,
+  auth: `## Phase 4: Complete Authentication System`,
+  components: `## Phase 5: UI Components with Unique Styling`,
+  aiIntegration: `## Phase 6: Multi-Provider AI Integration`,
+  testing: `## Phase 7: Automated Testing`,
+  review: `## Phase 8: 10x Quality Review`,
+}
+
+export function generateMegaPrompt(config: BuildConfig): string {
+  return generateMegaSystemPrompt(config)
+}
+
 export function generateFileEditPrompt(
   filePath: string,
   currentContent: string,
-  userInstruction: string
+  userInstruction: string,
+  templateId?: string
 ): string {
+  const design = getDesignSystem(templateId || 'saas')
+
   return `
 # FILE EDIT REQUEST
 
 **File**: ${filePath}
+**Design System**: ${design.name}
 
 ## Current Content:
 \`\`\`
@@ -412,19 +808,25 @@ ${currentContent}
 ## User Instruction:
 ${userInstruction}
 
+## Design Guidelines:
+- Primary Color: ${design.colors.primary}
+- Typography: ${design.typography.fontFamily.body}
+- Border Radius: ${design.borderRadius.md}
+- Animation: ${design.animation.duration.normal}
+
 ## Requirements:
 1. Apply the requested changes
-2. Maintain code quality and consistency
-3. Preserve existing functionality unless changing it
-4. Add proper TypeScript types
-5. Follow project conventions
+2. Follow the ${design.name} design system
+3. Maintain code quality and consistency
+4. Preserve existing functionality unless changing it
+5. Add proper TypeScript types
+6. Follow project conventions
 
 ## Output:
-Provide the complete updated file content.
+Provide the complete updated file content with the changes applied.
 `
 }
 
-// Generate review prompt
 export function generateReviewPrompt(projectPath: string): string {
   return `
 # 10x QUALITY REVIEW
@@ -433,41 +835,46 @@ Review the project at: ${projectPath}
 
 ## Review Checklist:
 
-### 1. Code Quality (0-10)
-- TypeScript strictness
+### 1. Code Quality (Weight: 20%)
+- TypeScript strictness (no any types)
 - No unused imports/variables
 - Consistent code style
 - Proper error handling
 - Clean abstractions
 
-### 2. UI/UX Quality (0-10)
-- Responsive design
+### 2. UI/UX Quality (Weight: 25%)
+- Follows unique design system
+- Responsive design (mobile-first)
 - Smooth animations
 - Loading states
 - Error states
 - Empty states
-- Accessibility
+- Accessibility (WCAG 2.1 AA)
 
-### 3. Performance (0-10)
-- Bundle size
-- Lazy loading
-- Image optimization
-- Caching
-- Core Web Vitals
+### 3. Performance (Weight: 15%)
+- Bundle size optimized
+- Lazy loading implemented
+- Images optimized
+- Core Web Vitals passing
+- Efficient re-renders
 
-### 4. Security (0-10)
-- Auth implementation
-- RLS policies
+### 4. Security (Weight: 20%)
+- Auth implementation secure
+- RLS policies correct
 - Input validation
 - XSS prevention
-- CSRF protection
+- No exposed secrets
 
-### 5. Functionality (0-10)
-- All features work
+### 5. Functionality (Weight: 20%)
+- All features work correctly
 - Edge cases handled
-- Forms validate
+- Forms validate properly
 - Navigation works
-- Data persists
+- Data persists correctly
+
+## Scoring:
+Each category: 0-100
+Minimum passing score: 90/100 overall
 
 ## Output Format:
 \`\`\`json
@@ -483,13 +890,13 @@ Review the project at: ${projectPath}
   "issues": [
     { "severity": "critical|high|medium|low", "file": "", "issue": "", "fix": "" }
   ],
-  "improvements": []
+  "improvements": [],
+  "passed": false
 }
 \`\`\`
 `
 }
 
-// Generate test prompt
 export function generateTestPrompt(projectPath: string): string {
   return `
 # AUTOMATED TESTING
@@ -505,7 +912,7 @@ Run comprehensive tests for: ${projectPath}
 
 2. **Type Check**:
    \`\`\`bash
-   npm run type-check
+   npx tsc --noEmit
    \`\`\`
 
 3. **Build Test**:
@@ -518,161 +925,19 @@ Run comprehensive tests for: ${projectPath}
    npm run test
    \`\`\`
 
-5. **E2E Tests** (if available):
-   \`\`\`bash
-   npm run test:e2e
-   \`\`\`
-
 ## For Each Failure:
 1. Identify the root cause
-2. Apply the fix
-3. Re-run the test
-4. Repeat until all pass
+2. Apply the fix immediately
+3. Re-run the failed test
+4. Continue until all pass
+
+## Success Criteria:
+- Zero lint errors
+- Zero TypeScript errors
+- Build completes successfully
+- All tests pass
 
 ## Output:
 Report all test results and any fixes applied.
 `
-}
-
-// Generate fix prompt
-export function generateFixPrompt(error: string, context: string): string {
-  return `
-# AUTO-FIX ERROR
-
-## Error:
-\`\`\`
-${error}
-\`\`\`
-
-## Context:
-${context}
-
-## Instructions:
-1. Analyze the error message
-2. Identify the root cause
-3. Determine the correct fix
-4. Apply the fix
-5. Verify it works
-
-## Rules:
-- Fix the actual problem, not symptoms
-- Don't break other functionality
-- Maintain code quality
-- Add error handling if needed
-
-## Output:
-Provide the fix with explanation.
-`
-}
-
-// Agent execution steps
-export const AGENT_STEPS: BuildStep[] = [
-  { id: 'planning', title: 'Analyzing Requirements', status: 'pending' },
-  { id: 'scaffolding', title: 'Creating Project Structure', status: 'pending' },
-  { id: 'dependencies', title: 'Installing Dependencies', status: 'pending' },
-  { id: 'database', title: 'Setting Up Database', status: 'pending' },
-  { id: 'auth', title: 'Implementing Authentication', status: 'pending' },
-  { id: 'components', title: 'Building UI Components', status: 'pending' },
-  { id: 'pages', title: 'Creating Pages', status: 'pending' },
-  { id: 'features', title: 'Implementing Features', status: 'pending' },
-  { id: 'ai', title: 'Adding AI Integration', status: 'pending' },
-  { id: 'testing', title: 'Running Tests', status: 'pending' },
-  { id: 'review', title: '10x Quality Review', status: 'pending' },
-  { id: 'fixing', title: 'Auto-Fixing Issues', status: 'pending' },
-  { id: 'complete', title: 'Finalizing Build', status: 'pending' },
-]
-
-// Simulated agent actions for demo
-export function getAgentActionsForPhase(phase: AgentPhase): AgentAction[] {
-  const actions: Record<AgentPhase, AgentAction[]> = {
-    planning: [
-      { type: 'review', description: 'Analyzing user requirements' },
-      { type: 'review', description: 'Identifying core features' },
-      { type: 'review', description: 'Planning database schema' },
-      { type: 'review', description: 'Designing component architecture' },
-    ],
-    scaffolding: [
-      { type: 'command', description: 'Creating project', command: 'npx create-next-app@latest' },
-      { type: 'write', description: 'Configuring TypeScript' },
-      { type: 'write', description: 'Setting up Tailwind CSS' },
-      { type: 'write', description: 'Creating folder structure' },
-    ],
-    dependencies: [
-      { type: 'command', description: 'Installing UI dependencies', command: 'npm install' },
-      { type: 'command', description: 'Installing Supabase', command: 'npm install @supabase/supabase-js' },
-      { type: 'command', description: 'Installing state management', command: 'npm install zustand' },
-    ],
-    configuration: [
-      { type: 'write', description: 'Creating environment config' },
-      { type: 'write', description: 'Setting up Supabase client' },
-      { type: 'write', description: 'Configuring AI provider' },
-    ],
-    database: [
-      { type: 'write', description: 'Creating database schema' },
-      { type: 'write', description: 'Setting up RLS policies' },
-      { type: 'write', description: 'Creating storage buckets' },
-      { type: 'command', description: 'Running migrations', command: 'supabase db push' },
-    ],
-    auth: [
-      { type: 'write', description: 'Creating auth provider' },
-      { type: 'write', description: 'Building login page' },
-      { type: 'write', description: 'Building signup page' },
-      { type: 'write', description: 'Creating auth middleware' },
-      { type: 'write', description: 'Implementing OAuth handlers' },
-    ],
-    components: [
-      { type: 'write', description: 'Creating Button component' },
-      { type: 'write', description: 'Creating Input component' },
-      { type: 'write', description: 'Creating Card component' },
-      { type: 'write', description: 'Creating Modal component' },
-      { type: 'write', description: 'Creating Sidebar component' },
-      { type: 'write', description: 'Creating Header component' },
-    ],
-    pages: [
-      { type: 'write', description: 'Creating layout' },
-      { type: 'write', description: 'Building home page' },
-      { type: 'write', description: 'Building dashboard' },
-      { type: 'write', description: 'Creating feature pages' },
-    ],
-    features: [
-      { type: 'write', description: 'Implementing core features' },
-      { type: 'write', description: 'Adding CRUD operations' },
-      { type: 'write', description: 'Creating API routes' },
-      { type: 'write', description: 'Adding real-time updates' },
-    ],
-    'ai-integration': [
-      { type: 'write', description: 'Setting up AI client' },
-      { type: 'write', description: 'Creating chat interface' },
-      { type: 'write', description: 'Implementing AI features' },
-      { type: 'write', description: 'Adding prompt templates' },
-    ],
-    testing: [
-      { type: 'command', description: 'Running linter', command: 'npm run lint' },
-      { type: 'command', description: 'Running type check', command: 'npm run type-check' },
-      { type: 'command', description: 'Building project', command: 'npm run build' },
-      { type: 'command', description: 'Running tests', command: 'npm run test' },
-    ],
-    review: [
-      { type: 'review', description: 'Reviewing code quality' },
-      { type: 'review', description: 'Checking UI/UX standards' },
-      { type: 'review', description: 'Auditing performance' },
-      { type: 'review', description: 'Validating security' },
-      { type: 'review', description: 'Calculating 10x score' },
-    ],
-    fixing: [
-      { type: 'fix', description: 'Fixing identified issues' },
-      { type: 'fix', description: 'Improving code quality' },
-      { type: 'fix', description: 'Enhancing UI polish' },
-    ],
-    iteration: [
-      { type: 'review', description: 'Re-reviewing after fixes' },
-      { type: 'test', description: 'Re-running tests' },
-    ],
-    complete: [
-      { type: 'review', description: 'Final verification' },
-      { type: 'write', description: 'Generating documentation' },
-    ],
-  }
-
-  return actions[phase] || []
 }
