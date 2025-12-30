@@ -1,13 +1,28 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Rocket, Check } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  Rocket,
+  Check,
+  Terminal,
+  FileCode,
+  Star,
+  FolderTree,
+  Settings,
+  Play,
+  RotateCcw,
+  Brain,
+} from 'lucide-react'
 import { Header } from './Header'
 import { TemplateSelector } from './TemplateSelector'
 import { RequirementsForm } from './RequirementsForm'
 import { ConfigurationPanel } from './ConfigurationPanel'
-import { BuildProgress } from './BuildProgress'
+import { AgentBuildProgress } from './AgentBuildProgress'
+import { FileEditor } from './FileEditor'
 import { Button } from './ui/Button'
+import { Card } from './ui/Card'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 
@@ -18,8 +33,30 @@ const steps = [
   { id: 3, title: 'Build', description: 'Generate your app' },
 ]
 
+const viewModes = [
+  { id: 'wizard' as const, label: 'Agent', icon: Brain },
+  { id: 'editor' as const, label: 'Editor', icon: FileCode },
+  { id: 'files' as const, label: 'Files', icon: FolderTree },
+  { id: 'terminal' as const, label: 'Terminal', icon: Terminal },
+  { id: 'review' as const, label: 'Review', icon: Star },
+]
+
 export function AppWizard() {
-  const { currentStep, setCurrentStep, config, buildStatus, setBuildStatus } = useAppStore()
+  const {
+    currentStep,
+    setCurrentStep,
+    config,
+    buildStatus,
+    setBuildStatus,
+    viewMode,
+    setViewMode,
+    reset,
+    reviewResult,
+    buildOutput,
+    claudeCommand,
+  } = useAppStore()
+
+  const isBuilding = buildStatus === 'building' || buildStatus === 'reviewing' || buildStatus === 'fixing' || buildStatus === 'testing'
 
   const canProceed = () => {
     switch (currentStep) {
@@ -49,6 +86,116 @@ export function AppWizard() {
     }
   }
 
+  const handleReset = () => {
+    reset()
+  }
+
+  const renderBuildContent = () => {
+    switch (viewMode) {
+      case 'wizard':
+        return <AgentBuildProgress />
+      case 'editor':
+        return <FileEditor />
+      case 'files':
+        return (
+          <Card className="p-8 text-center">
+            <FolderTree className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">Project Files</h3>
+            <p className="text-muted-foreground">
+              Browse and manage your project files here. Files will appear once the build is complete.
+            </p>
+            {config.projectPath && (
+              <p className="mt-4 text-sm">
+                Project Path: <code className="px-2 py-1 bg-muted rounded">{config.projectPath}/{config.appName}</code>
+              </p>
+            )}
+          </Card>
+        )
+      case 'terminal':
+        return (
+          <Card className="p-0 overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 bg-muted/50 border-b border-border">
+              <Terminal className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Terminal Output</span>
+            </div>
+            <div className="p-4 bg-black/80 font-mono text-sm text-green-400 min-h-[500px] max-h-[600px] overflow-auto">
+              <pre className="whitespace-pre-wrap">{buildOutput || '> Waiting for build to start...'}</pre>
+            </div>
+            {claudeCommand && (
+              <div className="px-4 py-3 bg-muted/30 border-t border-border">
+                <p className="text-xs text-muted-foreground mb-1">Claude Code Command:</p>
+                <code className="text-xs text-primary">{claudeCommand}</code>
+              </div>
+            )}
+          </Card>
+        )
+      case 'review':
+        return (
+          <Card className="p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <Star className="w-6 h-6 text-yellow-500" />
+              <h3 className="text-lg font-semibold">10x Quality Review</h3>
+            </div>
+            {reviewResult ? (
+              <div className="space-y-6">
+                <div className="text-center p-6 bg-muted/30 rounded-xl">
+                  <div className="text-5xl font-bold mb-2">
+                    <span className={cn(
+                      reviewResult.overallScore >= 90 ? 'text-green-500' :
+                      reviewResult.overallScore >= 70 ? 'text-yellow-500' : 'text-red-500'
+                    )}>
+                      {reviewResult.overallScore}
+                    </span>
+                    <span className="text-muted-foreground text-2xl">/100</span>
+                  </div>
+                  <p className="text-muted-foreground">Overall Quality Score</p>
+                </div>
+                <div className="grid grid-cols-5 gap-4">
+                  {Object.entries(reviewResult.scores).map(([key, value]) => (
+                    <div key={key} className="text-center p-4 bg-muted/20 rounded-lg">
+                      <div className="text-2xl font-bold text-primary">{value}</div>
+                      <div className="text-xs text-muted-foreground capitalize mt-1">
+                        {key.replace(/([A-Z])/g, ' $1').trim()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {reviewResult.issues.length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-3">Issues Found</h4>
+                    <div className="space-y-2">
+                      {reviewResult.issues.map((issue, i) => (
+                        <div key={i} className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg text-sm">
+                          <span className={cn(
+                            'px-2 py-0.5 rounded text-xs font-medium',
+                            issue.severity === 'critical' && 'bg-red-500/20 text-red-500',
+                            issue.severity === 'high' && 'bg-orange-500/20 text-orange-500',
+                            issue.severity === 'medium' && 'bg-yellow-500/20 text-yellow-500',
+                            issue.severity === 'low' && 'bg-blue-500/20 text-blue-500'
+                          )}>
+                            {issue.severity}
+                          </span>
+                          <span className="text-muted-foreground">{issue.file}:</span>
+                          <span>{issue.issue}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <Star className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>Review results will appear after the build completes</p>
+              </div>
+            )}
+          </Card>
+        )
+      default:
+        return <AgentBuildProgress />
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -61,79 +208,122 @@ export function AppWizard() {
 
       <main className="container mx-auto px-4 pt-24 pb-32">
         {/* Progress Steps */}
-        <div className="max-w-3xl mx-auto mb-12">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex flex-col items-center"
-                >
-                  <div
-                    className={cn(
-                      'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300',
-                      currentStep > step.id
-                        ? 'bg-green-500 text-white'
-                        : currentStep === step.id
-                        ? 'bg-primary text-primary-foreground ring-4 ring-primary/20'
-                        : 'bg-muted text-muted-foreground'
-                    )}
+        {currentStep < 3 && (
+          <div className="max-w-3xl mx-auto mb-12">
+            <div className="flex items-center justify-between">
+              {steps.map((step, index) => (
+                <div key={step.id} className="flex items-center">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="flex flex-col items-center"
                   >
-                    {currentStep > step.id ? (
-                      <Check className="w-5 h-5" />
-                    ) : (
-                      <span className="text-sm font-medium">{step.id + 1}</span>
-                    )}
-                  </div>
-                  <div className="mt-2 text-center hidden sm:block">
-                    <p
+                    <div
                       className={cn(
-                        'text-sm font-medium',
-                        currentStep >= step.id
-                          ? 'text-foreground'
-                          : 'text-muted-foreground'
+                        'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300',
+                        currentStep > step.id
+                          ? 'bg-green-500 text-white'
+                          : currentStep === step.id
+                          ? 'bg-primary text-primary-foreground ring-4 ring-primary/20'
+                          : 'bg-muted text-muted-foreground'
                       )}
                     >
-                      {step.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{step.description}</p>
-                  </div>
-                </motion.div>
+                      {currentStep > step.id ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        <span className="text-sm font-medium">{step.id + 1}</span>
+                      )}
+                    </div>
+                    <div className="mt-2 text-center hidden sm:block">
+                      <p
+                        className={cn(
+                          'text-sm font-medium',
+                          currentStep >= step.id
+                            ? 'text-foreground'
+                            : 'text-muted-foreground'
+                        )}
+                      >
+                        {step.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{step.description}</p>
+                    </div>
+                  </motion.div>
 
-                {index < steps.length - 1 && (
-                  <div
-                    className={cn(
-                      'w-16 sm:w-24 h-0.5 mx-2 transition-all duration-300',
-                      currentStep > step.id ? 'bg-green-500' : 'bg-border'
-                    )}
-                  />
+                  {index < steps.length - 1 && (
+                    <div
+                      className={cn(
+                        'w-16 sm:w-24 h-0.5 mx-2 transition-all duration-300',
+                        currentStep > step.id ? 'bg-green-500' : 'bg-border'
+                      )}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* View Mode Tabs for Build Step */}
+        {currentStep === 3 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-5xl mx-auto mb-6"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg">
+                {viewModes.map((mode) => {
+                  const Icon = mode.icon
+                  return (
+                    <button
+                      key={mode.id}
+                      onClick={() => setViewMode(mode.id)}
+                      className={cn(
+                        'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all',
+                        viewMode === mode.id
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {mode.label}
+                    </button>
+                  )
+                })}
+              </div>
+              <div className="flex items-center gap-2">
+                {buildStatus === 'complete' && (
+                  <Button variant="outline" size="sm" onClick={handleReset}>
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    New Project
+                  </Button>
                 )}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Step Content */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentStep}
+            key={currentStep === 3 ? `step-3-${viewMode}` : currentStep}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
+            className={currentStep === 3 ? 'max-w-5xl mx-auto' : ''}
           >
             {currentStep === 0 && <TemplateSelector />}
             {currentStep === 1 && <RequirementsForm />}
             {currentStep === 2 && <ConfigurationPanel />}
-            {currentStep === 3 && <BuildProgress />}
+            {currentStep === 3 && renderBuildContent()}
           </motion.div>
         </AnimatePresence>
       </main>
 
       {/* Navigation Footer */}
-      {buildStatus !== 'building' && buildStatus !== 'complete' && (
+      {!isBuilding && buildStatus !== 'complete' && (
         <motion.footer
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
