@@ -7,37 +7,32 @@ import {
   Rocket,
   Check,
   Terminal,
-  FileCode,
   Star,
   FolderTree,
-  Settings,
-  Play,
   RotateCcw,
   Brain,
+  Sparkles,
 } from 'lucide-react'
 import { Header } from './Header'
-import { TemplateSelector } from './TemplateSelector'
 import { RequirementsForm } from './RequirementsForm'
 import { ConfigurationPanel } from './ConfigurationPanel'
-import { AgentBuildProgress } from './AgentBuildProgress'
-import { FileEditor } from './FileEditor'
+import { DynamicBuildProgress } from './DynamicBuildProgress'
 import { Button } from './ui/Button'
 import { Card } from './ui/Card'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 
+// Simplified steps - no template selection, everything is dynamic
 const steps = [
-  { id: 0, title: 'Template', description: 'Choose your app type' },
-  { id: 1, title: 'Requirements', description: 'Describe your app' },
-  { id: 2, title: 'Configure', description: 'Set up integrations' },
-  { id: 3, title: 'Build', description: 'Generate your app' },
+  { id: 0, title: 'Describe', description: 'Tell us what to build' },
+  { id: 1, title: 'Configure', description: 'Set up integrations' },
+  { id: 2, title: 'Build', description: 'AI builds your app' },
 ]
 
 const viewModes = [
-  { id: 'wizard' as const, label: 'Agent', icon: Brain },
-  { id: 'editor' as const, label: 'Editor', icon: FileCode },
-  { id: 'files' as const, label: 'Files', icon: FolderTree },
+  { id: 'agent' as const, label: 'Agent', icon: Brain },
   { id: 'terminal' as const, label: 'Terminal', icon: Terminal },
+  { id: 'files' as const, label: 'Files', icon: FolderTree },
   { id: 'review' as const, label: 'Review', icon: Star },
 ]
 
@@ -51,20 +46,25 @@ export function AppWizard() {
     viewMode,
     setViewMode,
     reset,
-    reviewResult,
-    buildOutput,
+    runtimeState,
+    terminalOutput,
     claudeCommand,
   } = useAppStore()
 
-  const isBuilding = buildStatus === 'building' || buildStatus === 'reviewing' || buildStatus === 'fixing' || buildStatus === 'testing'
+  const isBuilding =
+    buildStatus === 'analyzing' ||
+    buildStatus === 'designing' ||
+    buildStatus === 'planning' ||
+    buildStatus === 'building' ||
+    buildStatus === 'reviewing' ||
+    buildStatus === 'fixing' ||
+    buildStatus === 'testing'
 
   const canProceed = () => {
     switch (currentStep) {
       case 0:
-        return config.template !== null
-      case 1:
         return config.appName.trim() !== '' && config.requirements.trim() !== ''
-      case 2:
+      case 1:
         return true
       default:
         return false
@@ -72,10 +72,10 @@ export function AppWizard() {
   }
 
   const handleNext = () => {
-    if (currentStep === 2) {
-      setCurrentStep(3)
-      setBuildStatus('building')
-    } else if (currentStep < 3) {
+    if (currentStep === 1) {
+      setCurrentStep(2)
+      // Build will start when DynamicBuildProgress mounts
+    } else if (currentStep < 2) {
       setCurrentStep(currentStep + 1)
     }
   }
@@ -92,21 +92,22 @@ export function AppWizard() {
 
   const renderBuildContent = () => {
     switch (viewMode) {
-      case 'wizard':
-        return <AgentBuildProgress />
-      case 'editor':
-        return <FileEditor />
+      case 'agent':
+        return <DynamicBuildProgress />
       case 'files':
         return (
           <Card className="p-8 text-center">
             <FolderTree className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-lg font-semibold mb-2">Project Files</h3>
             <p className="text-muted-foreground">
-              Browse and manage your project files here. Files will appear once the build is complete.
+              Files will appear here once the build is complete.
             </p>
             {config.projectPath && (
               <p className="mt-4 text-sm">
-                Project Path: <code className="px-2 py-1 bg-muted rounded">{config.projectPath}/{config.appName}</code>
+                Project Path:{' '}
+                <code className="px-2 py-1 bg-muted rounded">
+                  {config.projectPath}/{config.appName}
+                </code>
               </p>
             )}
           </Card>
@@ -119,11 +120,15 @@ export function AppWizard() {
               <span className="text-sm font-medium">Terminal Output</span>
             </div>
             <div className="p-4 bg-black/80 font-mono text-sm text-green-400 min-h-[500px] max-h-[600px] overflow-auto">
-              <pre className="whitespace-pre-wrap">{buildOutput || '> Waiting for build to start...'}</pre>
+              <pre className="whitespace-pre-wrap">
+                {terminalOutput || '> Waiting for build to start...'}
+              </pre>
             </div>
             {claudeCommand && (
               <div className="px-4 py-3 bg-muted/30 border-t border-border">
-                <p className="text-xs text-muted-foreground mb-1">Claude Code Command:</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  Claude Code Command:
+                </p>
                 <code className="text-xs text-primary">{claudeCommand}</code>
               </div>
             )}
@@ -136,52 +141,25 @@ export function AppWizard() {
               <Star className="w-6 h-6 text-yellow-500" />
               <h3 className="text-lg font-semibold">10x Quality Review</h3>
             </div>
-            {reviewResult ? (
+            {runtimeState?.qualityScore !== null ? (
               <div className="space-y-6">
                 <div className="text-center p-6 bg-muted/30 rounded-xl">
                   <div className="text-5xl font-bold mb-2">
-                    <span className={cn(
-                      reviewResult.overallScore >= 90 ? 'text-green-500' :
-                      reviewResult.overallScore >= 70 ? 'text-yellow-500' : 'text-red-500'
-                    )}>
-                      {reviewResult.overallScore}
+                    <span
+                      className={cn(
+                        runtimeState.qualityScore >= 90
+                          ? 'text-green-500'
+                          : runtimeState.qualityScore >= 70
+                          ? 'text-yellow-500'
+                          : 'text-red-500'
+                      )}
+                    >
+                      {runtimeState.qualityScore}
                     </span>
                     <span className="text-muted-foreground text-2xl">/100</span>
                   </div>
                   <p className="text-muted-foreground">Overall Quality Score</p>
                 </div>
-                <div className="grid grid-cols-5 gap-4">
-                  {Object.entries(reviewResult.scores).map(([key, value]) => (
-                    <div key={key} className="text-center p-4 bg-muted/20 rounded-lg">
-                      <div className="text-2xl font-bold text-primary">{value}</div>
-                      <div className="text-xs text-muted-foreground capitalize mt-1">
-                        {key.replace(/([A-Z])/g, ' $1').trim()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {reviewResult.issues.length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-3">Issues Found</h4>
-                    <div className="space-y-2">
-                      {reviewResult.issues.map((issue, i) => (
-                        <div key={i} className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg text-sm">
-                          <span className={cn(
-                            'px-2 py-0.5 rounded text-xs font-medium',
-                            issue.severity === 'critical' && 'bg-red-500/20 text-red-500',
-                            issue.severity === 'high' && 'bg-orange-500/20 text-orange-500',
-                            issue.severity === 'medium' && 'bg-yellow-500/20 text-yellow-500',
-                            issue.severity === 'low' && 'bg-blue-500/20 text-blue-500'
-                          )}>
-                            {issue.severity}
-                          </span>
-                          <span className="text-muted-foreground">{issue.file}:</span>
-                          <span>{issue.issue}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
@@ -192,7 +170,7 @@ export function AppWizard() {
           </Card>
         )
       default:
-        return <AgentBuildProgress />
+        return <DynamicBuildProgress />
     }
   }
 
@@ -207,9 +185,30 @@ export function AppWizard() {
       </div>
 
       <main className="container mx-auto px-4 pt-24 pb-32">
+        {/* Hero for first step */}
+        {currentStep === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-12"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary mb-6">
+              <Sparkles className="w-4 h-4" />
+              <span className="text-sm font-medium">100% Dynamic AI-Powered</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Describe Your App
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Tell us what you want to build. Our AI will analyze your requirements
+              and make all design, architecture, and implementation decisions at runtime.
+            </p>
+          </motion.div>
+        )}
+
         {/* Progress Steps */}
-        {currentStep < 3 && (
-          <div className="max-w-3xl mx-auto mb-12">
+        {currentStep < 2 && (
+          <div className="max-w-2xl mx-auto mb-12">
             <div className="flex items-center justify-between">
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center">
@@ -246,14 +245,16 @@ export function AppWizard() {
                       >
                         {step.title}
                       </p>
-                      <p className="text-xs text-muted-foreground">{step.description}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {step.description}
+                      </p>
                     </div>
                   </motion.div>
 
                   {index < steps.length - 1 && (
                     <div
                       className={cn(
-                        'w-16 sm:w-24 h-0.5 mx-2 transition-all duration-300',
+                        'w-24 sm:w-32 h-0.5 mx-2 transition-all duration-300',
                         currentStep > step.id ? 'bg-green-500' : 'bg-border'
                       )}
                     />
@@ -265,7 +266,7 @@ export function AppWizard() {
         )}
 
         {/* View Mode Tabs for Build Step */}
-        {currentStep === 3 && (
+        {currentStep === 2 && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -307,23 +308,22 @@ export function AppWizard() {
         {/* Step Content */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentStep === 3 ? `step-3-${viewMode}` : currentStep}
+            key={currentStep === 2 ? `step-2-${viewMode}` : currentStep}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className={currentStep === 3 ? 'max-w-5xl mx-auto' : ''}
+            className={currentStep === 2 ? 'max-w-5xl mx-auto' : 'max-w-2xl mx-auto'}
           >
-            {currentStep === 0 && <TemplateSelector />}
-            {currentStep === 1 && <RequirementsForm />}
-            {currentStep === 2 && <ConfigurationPanel />}
-            {currentStep === 3 && renderBuildContent()}
+            {currentStep === 0 && <RequirementsForm />}
+            {currentStep === 1 && <ConfigurationPanel />}
+            {currentStep === 2 && renderBuildContent()}
           </motion.div>
         </AnimatePresence>
       </main>
 
       {/* Navigation Footer */}
-      {!isBuilding && buildStatus !== 'complete' && (
+      {!isBuilding && buildStatus !== 'complete' && currentStep < 2 && (
         <motion.footer
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -340,21 +340,16 @@ export function AppWizard() {
             </Button>
 
             <div className="flex items-center gap-2">
-              {config.template && (
-                <span className="text-sm text-muted-foreground hidden sm:block">
-                  Building: <span className="text-foreground font-medium">{config.template.name}</span>
-                </span>
-              )}
+              <span className="text-sm text-muted-foreground hidden sm:block">
+                Everything is decided by AI at runtime
+              </span>
             </div>
 
-            <Button
-              onClick={handleNext}
-              disabled={!canProceed()}
-            >
-              {currentStep === 2 ? (
+            <Button onClick={handleNext} disabled={!canProceed()}>
+              {currentStep === 1 ? (
                 <>
                   <Rocket className="w-4 h-4 mr-2" />
-                  Build App
+                  Start Build
                 </>
               ) : (
                 <>
