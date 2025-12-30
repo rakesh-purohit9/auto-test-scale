@@ -12,6 +12,7 @@ import { DynamicPrompts } from './dynamic-prompts'
 // ============================================================================
 
 export interface RuntimeConfig {
+  appType: string | null  // Just a hint for Claude - no code attached
   appName: string
   requirements: string
   projectPath: string
@@ -328,9 +329,12 @@ export class RuntimeEngine {
     })
 
     this.log('info', 'Starting requirement analysis...')
+    if (this.config.appType) {
+      this.log('info', `App type hint: ${this.config.appType}`)
+    }
 
     try {
-      const prompt = DynamicPrompts.analyze(this.config.requirements)
+      const prompt = DynamicPrompts.analyze(this.config.requirements, this.config.appType)
       const response = await callClaude(prompt)
       const analysis = extractJSON(response) as AnalysisResult
 
@@ -644,7 +648,8 @@ export class RuntimeEngine {
       this.config.requirements,
       this.config.projectPath,
       this.config.supabase,
-      this.config.ai
+      this.config.ai,
+      this.config.appType
     )
 
     return `claude --dangerously-skip-permissions -p "${megaPrompt.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`

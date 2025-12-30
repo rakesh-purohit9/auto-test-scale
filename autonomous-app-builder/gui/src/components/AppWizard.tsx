@@ -12,8 +12,10 @@ import {
   RotateCcw,
   Brain,
   Sparkles,
+  LayoutGrid,
 } from 'lucide-react'
 import { Header } from './Header'
+import { AppTypeSelector } from './AppTypeSelector'
 import { RequirementsForm } from './RequirementsForm'
 import { ConfigurationPanel } from './ConfigurationPanel'
 import { DynamicBuildProgress } from './DynamicBuildProgress'
@@ -22,11 +24,12 @@ import { Card } from './ui/Card'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 
-// Simplified steps - no template selection, everything is dynamic
+// Steps with app type selection for better context
 const steps = [
-  { id: 0, title: 'Describe', description: 'Tell us what to build' },
-  { id: 1, title: 'Configure', description: 'Set up integrations' },
-  { id: 2, title: 'Build', description: 'AI builds your app' },
+  { id: 0, title: 'App Type', description: 'What are you building?' },
+  { id: 1, title: 'Describe', description: 'Tell us the details' },
+  { id: 2, title: 'Configure', description: 'Set up integrations' },
+  { id: 3, title: 'Build', description: 'AI builds your app' },
 ]
 
 const viewModes = [
@@ -63,8 +66,10 @@ export function AppWizard() {
   const canProceed = () => {
     switch (currentStep) {
       case 0:
-        return config.appName.trim() !== '' && config.requirements.trim() !== ''
+        return config.appType !== null // App type selected
       case 1:
+        return config.appName.trim() !== '' && config.requirements.trim() !== ''
+      case 2:
         return true
       default:
         return false
@@ -72,10 +77,10 @@ export function AppWizard() {
   }
 
   const handleNext = () => {
-    if (currentStep === 1) {
-      setCurrentStep(2)
+    if (currentStep === 2) {
+      setCurrentStep(3)
       // Build will start when DynamicBuildProgress mounts
-    } else if (currentStep < 2) {
+    } else if (currentStep < 3) {
       setCurrentStep(currentStep + 1)
     }
   }
@@ -197,18 +202,18 @@ export function AppWizard() {
               <span className="text-sm font-medium">100% Dynamic AI-Powered</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Describe Your App
+              What Are You Building?
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Tell us what you want to build. Our AI will analyze your requirements
-              and make all design, architecture, and implementation decisions at runtime.
+              Select an app type to help Claude understand your vision.
+              All design, architecture, and code decisions are still made dynamically at runtime.
             </p>
           </motion.div>
         )}
 
         {/* Progress Steps */}
-        {currentStep < 2 && (
-          <div className="max-w-2xl mx-auto mb-12">
+        {currentStep < 3 && (
+          <div className="max-w-3xl mx-auto mb-12">
             <div className="flex items-center justify-between">
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center">
@@ -266,7 +271,7 @@ export function AppWizard() {
         )}
 
         {/* View Mode Tabs for Build Step */}
-        {currentStep === 2 && (
+        {currentStep === 3 && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -308,22 +313,28 @@ export function AppWizard() {
         {/* Step Content */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentStep === 2 ? `step-2-${viewMode}` : currentStep}
+            key={currentStep === 3 ? `step-3-${viewMode}` : currentStep}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className={currentStep === 2 ? 'max-w-5xl mx-auto' : 'max-w-2xl mx-auto'}
+            className={currentStep === 3 ? 'max-w-5xl mx-auto' : currentStep === 0 ? 'max-w-6xl mx-auto' : 'max-w-2xl mx-auto'}
           >
-            {currentStep === 0 && <RequirementsForm />}
-            {currentStep === 1 && <ConfigurationPanel />}
-            {currentStep === 2 && renderBuildContent()}
+            {currentStep === 0 && (
+              <AppTypeSelector
+                selectedType={config.appType}
+                onSelect={(type) => useAppStore.getState().updateConfig({ appType: type })}
+              />
+            )}
+            {currentStep === 1 && <RequirementsForm />}
+            {currentStep === 2 && <ConfigurationPanel />}
+            {currentStep === 3 && renderBuildContent()}
           </motion.div>
         </AnimatePresence>
       </main>
 
       {/* Navigation Footer */}
-      {!isBuilding && buildStatus !== 'complete' && currentStep < 2 && (
+      {!isBuilding && buildStatus !== 'complete' && currentStep < 3 && (
         <motion.footer
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -346,7 +357,7 @@ export function AppWizard() {
             </div>
 
             <Button onClick={handleNext} disabled={!canProceed()}>
-              {currentStep === 1 ? (
+              {currentStep === 2 ? (
                 <>
                   <Rocket className="w-4 h-4 mr-2" />
                   Start Build

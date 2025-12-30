@@ -80,6 +80,7 @@ export function DynamicBuildProgress() {
 
     const engine = createRuntimeEngine(
       {
+        appType: config.appType,
         appName: config.appName,
         requirements: config.requirements,
         projectPath: config.projectPath,

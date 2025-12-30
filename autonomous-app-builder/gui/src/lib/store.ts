@@ -1,12 +1,14 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { RuntimeState } from './runtime-engine'
+import { AppType } from '../components/AppTypeSelector'
 
 // ============================================================================
 // TYPES - Minimal, everything else is dynamic
 // ============================================================================
 
 export type BuildConfig = {
+  appType: AppType | null  // Just a hint for Claude, no code attached
   appName: string
   requirements: string
   projectPath: string
@@ -88,6 +90,7 @@ interface AppState {
 }
 
 const initialConfig: BuildConfig = {
+  appType: null,
   appName: '',
   requirements: '',
   projectPath: './projects',

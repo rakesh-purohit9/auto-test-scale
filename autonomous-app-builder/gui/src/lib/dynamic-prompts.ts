@@ -72,12 +72,19 @@ For each decision, output:
 // ANALYSIS PROMPT - Understanding User Intent
 // ============================================================================
 
-export function createAnalysisPrompt(userInput: string): string {
+export function createAnalysisPrompt(userInput: string, appType?: string | null): string {
+  const appTypeContext = appType ? `
+## APP TYPE HINT:
+The user selected "${appType}" as the type of app they want to build.
+Use this as context to better understand their requirements and make informed decisions.
+This is just a hint - analyze their detailed requirements to understand the full scope.
+` : ''
+
   return `
 # 🔍 REQUIREMENT ANALYSIS
 
 Analyze this user request and extract ALL relevant information:
-
+${appTypeContext}
 ## USER INPUT:
 """
 ${userInput}
@@ -696,8 +703,15 @@ export function createMegaBuildPrompt(
   userRequirements: string,
   projectPath: string,
   supabaseConfig: { enabled: boolean; url?: string; anonKey?: string },
-  aiConfig: { enabled: boolean; provider?: string; apiKey?: string }
+  aiConfig: { enabled: boolean; provider?: string; apiKey?: string },
+  appType?: string | null
 ): string {
+  const appTypeSection = appType ? `
+## APP TYPE: ${appType.toUpperCase()}
+The user indicated they want to build a "${appType}" type application.
+Use this as additional context when analyzing requirements and making design decisions.
+` : ''
+
   return `
 ${AUTONOMOUS_SYSTEM_PROMPT}
 
@@ -705,7 +719,7 @@ ${AUTONOMOUS_SYSTEM_PROMPT}
 
 ## APP NAME: ${appName}
 ## OUTPUT PATH: ${projectPath}
-
+${appTypeSection}
 ## USER REQUIREMENTS:
 """
 ${userRequirements}
